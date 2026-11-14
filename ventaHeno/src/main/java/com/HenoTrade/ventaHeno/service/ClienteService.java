@@ -41,6 +41,16 @@ public class ClienteService {
 
         cliente.setCedula(cedulaTrimmed);
 
+        // Validar y normalizar correo si se proporciona
+        if (cliente.getCorreo() != null && !cliente.getCorreo().trim().isEmpty()) {
+            String correoTrimmed = cliente.getCorreo().trim().toLowerCase();
+            Optional<Cliente> conCorreo = clienteRepositorio.findByCorreo(correoTrimmed);
+            if (conCorreo.isPresent()) {
+                throw new IllegalArgumentException("Ya existe un cliente registrado con el correo " + correoTrimmed + ".");
+            }
+            cliente.setCorreo(correoTrimmed);
+        }
+
         if (archivoImagen != null && !archivoImagen.isEmpty()) {
             try {
                 Map uploadResult = cloudinary.uploader().upload(archivoImagen.getBytes(), ObjectUtils.emptyMap());
@@ -60,6 +70,9 @@ public class ClienteService {
             c.setNombre(cliente.getNombre());
             c.setTelefono(cliente.getTelefono());
             c.setDireccion(cliente.getDireccion());
+            if (cliente.getCorreo() != null) {
+                c.setCorreo(cliente.getCorreo().trim().toLowerCase());
+            }
             if (cliente.getClave() != null && !cliente.getClave().isEmpty()) {
                 c.setClave(cliente.getClave());
             }
@@ -98,6 +111,18 @@ public class ClienteService {
         if (cliente.getDireccion() != null) {
             c.setDireccion(cliente.getDireccion().trim());
         }
+        if (cliente.getCorreo() != null) {
+            String correoTrimmed = cliente.getCorreo().trim().toLowerCase();
+            if (!correoTrimmed.isEmpty()) {
+                Optional<Cliente> conCorreo = clienteRepositorio.findByCorreo(correoTrimmed);
+                if (conCorreo.isPresent() && !conCorreo.get().getCedula().equals(cedulaTrimmed)) {
+                    throw new IllegalArgumentException("El correo " + correoTrimmed + " ya se encuentra registrado por otro cliente.");
+                }
+                c.setCorreo(correoTrimmed);
+            } else {
+                c.setCorreo(null);
+            }
+        }
         if (cliente.getClave() != null && !cliente.getClave().trim().isEmpty()) {
             c.setClave(cliente.getClave());
         }
@@ -114,8 +139,13 @@ public class ClienteService {
         return clienteRepositorio.save(c);
     }
 
-    public Optional<Cliente> loginCliente(String cedula, String clave) {
-        Optional<Cliente> opt = clienteRepositorio.findByCedula(cedula);
+    public Optional<Cliente> loginCliente(String identificador, String clave) {
+        if (identificador == null || clave == null) return Optional.empty();
+        String idTrimmed = identificador.trim();
+        Optional<Cliente> opt = clienteRepositorio.findByCedula(idTrimmed);
+        if (opt.isEmpty()) {
+            opt = clienteRepositorio.findByCorreo(idTrimmed.toLowerCase());
+        }
         if (opt.isPresent()) {
             Cliente c = opt.get();
             if (c.getClave() != null && c.getClave().equals(clave)) {

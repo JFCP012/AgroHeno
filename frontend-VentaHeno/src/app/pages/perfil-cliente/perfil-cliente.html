@@ -116,6 +116,11 @@
         </div>
 
         <div class="detail-item">
+          <span class="detail-label">Correo Electrónico</span>
+          <span class="detail-value">{{ cliente.correo || 'No registrado' }}</span>
+        </div>
+
+        <div class="detail-item">
           <span class="detail-label">Dirección</span>
           <span class="detail-value">{{ cliente.direccion || 'No registrada' }}</span>
         </div>
@@ -398,6 +403,13 @@
             <label class="form-label">Teléfono de Contacto</label>
             <input type="text" [(ngModel)]="clienteEdit.telefono" name="telefono" class="form-input"
               placeholder="Ej. 3001234567" />
+          </div>
+
+          <!-- Correo Electrónico (Editable) -->
+          <div class="form-group">
+            <label class="form-label">Correo Electrónico</label>
+            <input type="email" [(ngModel)]="clienteEdit.correo" name="correo" class="form-input"
+              placeholder="Ej. usuario@agroheno.com" />
           </div>
 
           <!-- Dirección (Editable) -->

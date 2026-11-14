@@ -23,6 +23,7 @@ export class CrearCliente implements OnInit {
     nombre: '',
     telefono: '',
     direccion: '',
+    correo: '',
     clave: ''
   };
 
@@ -95,6 +96,9 @@ export class CrearCliente implements OnInit {
     this.successMsg = '';
     this.errorMsg = '';
     this.cliente.cedula = cedulaLimpia;
+    if (this.cliente.correo) {
+      this.cliente.correo = this.cliente.correo.trim();
+    }
     this.cdr.detectChanges();
 
     this.clienteService.registrarCliente(this.cliente, this.imagenSeleccionada).subscribe({
