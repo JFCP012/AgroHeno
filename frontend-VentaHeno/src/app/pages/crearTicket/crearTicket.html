@@ -1,0 +1,236 @@
+<!-- Header Oficial Verde AgroHeno -->
+<header class="simple-header">
+  <div class="simple-header-inner" (click)="volver()" style="cursor: pointer;" title="Volver al inicio">
+    <div class="header-branding">
+      <img src="assets/Imagenes/Logo2.png" alt="AgroHeno Logo" class="agroheno-logo">
+      <div class="brand-text-container">
+        <span class="brand-main">AgroHeno</span>
+        <span class="brand-sub">CREACIÓN DE TICKETS</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="ticket-page-wrapper">
+
+  <!-- Barra Superior de Navegación -->
+  <div class="ticket-top-bar">
+    <button class="btn-volver" (click)="volver()">
+      ← Volver al inicio
+    </button>
+
+    <button class="btn-cerrar" *ngIf="cliente" (click)="cerrarSesion()">
+      Cerrar sesión
+    </button>
+  </div>
+
+  <div class="ticket-container">
+
+    <!-- VISTA 1: FORMULARIO DE RADICACIÓN -->
+    <div *ngIf="!ticketExitoso" class="ticket-card">
+
+      <!-- Encabezado de la Tarjeta -->
+      <div class="ticket-header-flat">
+        <div class="icon-header-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y1="13"></line>
+            <line x1="16" y1="17" x2="8" y1="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </div>
+        <div class="header-titles">
+          <span class="badge-tag">Soporte Técnico AgroHeno</span>
+          <h1 class="main-title">Creación de Tickets</h1>
+          <p class="subtitle">Radica tu caso o solicitud para ser atendido por el equipo técnico de AgroHeno.</p>
+        </div>
+      </div>
+
+      <div class="flat-divider"></div>
+
+      <!-- Alerta de Error -->
+      <div *ngIf="errorMensaje" class="alert alert-error">
+        ⚠️ {{ errorMensaje }}
+      </div>
+
+      <form (ngSubmit)="enviarTicket()" class="ticket-form">
+
+        <!-- Fila 1: Cédula y Factura -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">
+              Cédula / NIT del Cliente <span class="required">*</span>
+            </label>
+            <input type="text" [(ngModel)]="cedulaClienteInput" name="cedulaCliente" class="form-input"
+              placeholder="Ej: 1054544943" required [readonly]="cliente?.cedula != null"
+              [class.input-locked]="cliente?.cedula != null">
+            <span class="form-hint" *ngIf="cliente">Identificado como: <strong>{{ cliente.nombre }}</strong></span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Factura de Compra Relacionada <span class="optional">(Opcional)</span>
+            </label>
+            <input type="number" [(ngModel)]="idFacturaInput" name="idFactura" class="form-input"
+              placeholder="Ej: 6 (Número de Factura)">
+            <span class="form-hint">Si tu caso es sobre una compra reciente, digita el número de factura.</span>
+          </div>
+        </div>
+
+        <!-- Fila 2: Categoría con Selector Visual -->
+        <div class="form-group">
+          <label class="form-label">Categoría del Inconveniente <span class="required">*</span></label>
+          <div class="categorias-grid">
+            <div *ngFor="let cat of categorias" class="categoria-card"
+              [class.selected]="ticket.categoriaTicket === cat.id" (click)="seleccionarCategoria(cat.id)">
+              <div class="cat-icon">{{ cat.icon }}</div>
+              <div class="cat-content">
+                <span class="cat-title">{{ cat.nombre }}</span>
+                <span class="cat-desc">{{ cat.desc }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 3: Título del Ticket -->
+        <div class="form-group">
+          <label class="form-label">
+            Título del Problema <span class="required">*</span>
+          </label>
+          <input type="text" [(ngModel)]="ticket.tituloTicket" name="tituloTicket" class="form-input"
+            placeholder="Ej: Paca de Angleton con exceso de humedad y presencia de moho" required maxlength="150">
+        </div>
+
+        <!-- Fila 4: Descripción Detallada -->
+        <div class="form-group">
+          <label class="form-label">
+            Descripción Detallada <span class="required">*</span>
+          </label>
+          <textarea [(ngModel)]="ticket.descripcionTicket" name="descripcionTicket" class="form-textarea" rows="4"
+            placeholder="Explica detalladamente qué sucedió: lote del heno, cantidad de pacas afectadas, síntomas o cualquier detalle relevante..."
+            required></textarea>
+          <span class="form-hint">💡 El motor inteligente evaluará palabras clave de urgencia para priorizar tu caso.</span>
+        </div>
+
+        <!-- Fila 5: Evidencia Fotográfica (Cloudinary) -->
+        <div class="form-group">
+          <label class="form-label">
+            Evidencia Fotográfica <span class="optional">(Recomendado)</span>
+          </label>
+          <div class="upload-dropzone" *ngIf="!previewImagenUrl">
+            <input type="file" id="fileInputTicket" (change)="onArchivoSeleccionado($event)" accept="image/*"
+              class="input-file-hidden">
+            <label for="fileInputTicket" class="dropzone-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="upload-icon">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span class="upload-main-text">Haz clic aquí para adjuntar una foto del producto</span>
+              <span class="upload-sub-text">Formatos soportados: JPG, PNG o WebP (Máx 10MB)</span>
+            </label>
+          </div>
+
+          <!-- Preview de imagen seleccionada -->
+          <div *ngIf="previewImagenUrl" class="image-preview-wrapper">
+            <img [src]="previewImagenUrl" alt="Vista previa de evidencia" class="preview-img">
+            <div class="preview-info">
+              <span class="file-name">{{ archivoImagen?.name }}</span>
+              <span class="file-size">{{ (archivoImagen?.size || 0) / 1024 | number:'1.0-0' }} KB</span>
+              <button type="button" class="btn-remove-img" (click)="quitarImagen()" title="Quitar imagen">
+                ✕ Quitar foto
+              </button>
+            </div>
+          </div>
+          <span class="form-hint highlight-hint">📸 Adjuntar una foto sumará puntos a la prioridad de atención de tu caso.</span>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="form-actions-bar">
+          <button type="button" class="btn-cancel" (click)="volver()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-submit" [disabled]="enviando">
+            <span *ngIf="!enviando">Radicar Ticket</span>
+            <span *ngIf="enviando" class="flex-align">
+              <span class="mini-spinner"></span> Radicando...
+            </span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+
+    <!-- VISTA 2: RADICACIÓN EXITOSA -->
+    <div *ngIf="ticketExitoso" class="success-card">
+      <div class="success-icon-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+          stroke="#036c39" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+
+      <span class="success-pill">Radicado Exitosamente</span>
+      <h2 class="success-title">¡Hemos recibido tu Ticket!</h2>
+      <p class="success-desc">
+        Tu solicitud ha sido registrada en el sistema técnico de AgroHeno con análisis inteligente de prioridad y tiempos de respuesta.
+      </p>
+
+      <!-- Cuadro de Radicado -->
+      <div class="radicado-box">
+        <span class="radicado-label">CÓDIGO DE RADICADO</span>
+        <div class="radicado-value-row">
+          <span class="radicado-code">{{ ticketExitoso.codigoRadicado }}</span>
+          <button type="button" class="btn-copy" (click)="copiarRadicado(ticketExitoso.codigoRadicado || '')" title="Copiar código">
+            {{ copiado ? '✓ Copiado' : '📋 Copiar' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Información de Seguimiento del Ticket -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <span class="metric-label">Estado Inicial</span>
+          <span class="status-badge">{{ ticketExitoso.estadoTicket }}</span>
+          <span class="metric-sub">En espera de atención por un técnico</span>
+        </div>
+
+        <div class="metric-card" *ngIf="ticketExitoso.fechaLimite">
+          <span class="metric-label">Fecha Estimada de Respuesta</span>
+          <span class="metric-date">{{ ticketExitoso.fechaLimite | date:'dd/MM/yyyy, h:mm a' }}</span>
+          <span class="metric-sub">Compromiso de atención oportuna</span>
+        </div>
+      </div>
+
+      <!-- Imagen guardada en Cloudinary si aplica -->
+      <div *ngIf="ticketExitoso.evidenciaImg" class="evidencia-confirm-box">
+        <span class="evidencia-label">Evidencia cargada en Cloudinary:</span>
+        <a [href]="ticketExitoso.evidenciaImg" target="_blank" class="evidencia-link">
+          Ver foto subida en tamaño completo ↗
+        </a>
+      </div>
+
+      <div class="success-actions">
+        <button type="button" class="btn-primary-action" (click)="radicarOtro()">
+          Radicar otro ticket
+        </button>
+        <button type="button" class="btn-secondary-action" (click)="volver()">
+          Volver al inicio
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Footer Oficial de AgroHeno -->
+<footer class="simple-footer">
+  <p>&copy; 2026 AgroHeno. Todos los derechos reservados. | Diseñado para el Agro de Alta Calidad</p>
+</footer>
