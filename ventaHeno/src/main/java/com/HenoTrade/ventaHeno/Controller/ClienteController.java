@@ -54,9 +54,15 @@ public class ClienteController {
 
     @PostMapping("/login")
     public ResponseEntity<Cliente> login(@RequestBody java.util.Map<String, String> body) {
-        String cedula = body.get("cedula");
+        String identificador = body.get("cedula");
+        if (identificador == null || identificador.trim().isEmpty()) {
+            identificador = body.get("correo");
+        }
+        if (identificador == null || identificador.trim().isEmpty()) {
+            identificador = body.get("usuario");
+        }
         String clave = body.get("clave");
-        Optional<Cliente> resultado = clienteService.loginCliente(cedula, clave);
+        Optional<Cliente> resultado = clienteService.loginCliente(identificador, clave);
         if (resultado.isPresent()) {
             return ResponseEntity.ok(resultado.get());
         } else {

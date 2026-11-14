@@ -8,4 +8,5 @@ import com.HenoTrade.ventaHeno.Entity.Cliente;
 @Repository
 public interface ClienteRepositorio extends JpaRepository<Cliente, String> {
     Optional<Cliente> findByCedula(String cedula);
+    Optional<Cliente> findByCorreo(String correo);
 }

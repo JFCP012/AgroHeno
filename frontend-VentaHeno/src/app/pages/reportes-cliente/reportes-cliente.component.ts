@@ -155,6 +155,9 @@ export class ReportesClienteComponent implements OnInit {
       doc.setFontSize(11);
       doc.setTextColor(71, 85, 105);
       doc.text(`Cédula: ${this.reporteCliente.cliente ? this.reporteCliente.cliente.cedula : this.reporteCliente.facturas[0].cedulaCliente}`, 14, 55);
+      if (this.reporteCliente.cliente?.correo) {
+        doc.text(`Correo: ${this.reporteCliente.cliente.correo}`, 110, 55);
+      }
       doc.text(`Total Compras: ${this.reporteCliente.totalFacturas}`, 14, 62);
       doc.text(`Total Pacas: ${this.reporteCliente.totalPacas}`, 14, 69);
       doc.text(`Total Invertido: $${this.reporteCliente.montoTotal.toLocaleString('es-CO')}`, 14, 76);

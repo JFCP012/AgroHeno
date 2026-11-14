@@ -69,6 +69,8 @@
         <div class="ficha-item"><strong>Nombre:</strong> {{ reporteCliente.cliente.nombre }}</div>
         <div class="ficha-item"><strong>Cédula:</strong> {{ reporteCliente.cliente.cedula }}</div>
         <div class="ficha-item"><strong>Teléfono:</strong> {{ reporteCliente.cliente.telefono }}</div>
+        <div class="ficha-item" *ngIf="reporteCliente.cliente.correo"><strong>Correo:</strong> {{
+          reporteCliente.cliente.correo }}</div>
         <div class="ficha-item" *ngIf="reporteCliente.cliente.direccion"><strong>Dirección:</strong> {{
           reporteCliente.cliente.direccion }}</div>
       </div>

@@ -53,6 +53,7 @@ export interface ReporteVentaCliente {
     nombre: string;
     telefono: string;
     direccion?: string;
+    correo?: string;
   } | null;
   totalFacturas: number;
   montoTotal: number;

@@ -40,4 +40,7 @@ public class Cliente {
     @Column(name = "clave")
     private String clave;
 
+    @Column(name = "correo")
+    private String correo;
+
 }

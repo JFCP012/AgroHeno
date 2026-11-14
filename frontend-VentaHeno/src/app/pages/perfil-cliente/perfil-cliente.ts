@@ -34,7 +34,8 @@ export class PerfilCliente implements OnInit {
   clienteEdit = {
     nombre: '',
     telefono: '',
-    direccion: ''
+    direccion: '',
+    correo: ''
   };
   archivoImagenSeleccionado: File | null = null;
   previewImagenUrl: string | null = null;
@@ -83,7 +84,8 @@ export class PerfilCliente implements OnInit {
       this.clienteEdit = {
         nombre: this.cliente.nombre || '',
         telefono: this.cliente.telefono || '',
-        direccion: this.cliente.direccion || ''
+        direccion: this.cliente.direccion || '',
+        correo: this.cliente.correo || ''
       };
       this.previewImagenUrl = this.cliente.imagen || null;
       this.archivoImagenSeleccionado = null;
@@ -174,10 +176,15 @@ export class PerfilCliente implements OnInit {
       if (this.cliente.telefono) {
         doc.text(`Teléfono: ${this.cliente.telefono}`, 120, 66);
       }
+      let currentClientY = 73;
+      if (this.cliente.correo) {
+        doc.text(`Correo: ${this.cliente.correo}`, 120, currentClientY);
+        currentClientY += 7;
+      }
       if (this.cliente.direccion) {
         const dir = `Dirección: ${this.cliente.direccion}`;
         const dirLines = doc.splitTextToSize(dir, 75);
-        doc.text(dirLines, 120, 73);
+        doc.text(dirLines, 120, currentClientY);
       }
 
       // Tabla de productos
@@ -275,6 +282,7 @@ export class PerfilCliente implements OnInit {
       nombre: this.clienteEdit.nombre.trim(),
       telefono: this.clienteEdit.telefono.trim(),
       direccion: this.clienteEdit.direccion.trim(),
+      correo: this.clienteEdit.correo?.trim() || undefined,
       clave: this.cliente.clave,
       imagen: this.cliente.imagen
     };
