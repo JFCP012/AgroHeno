@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { CarritoService } from '../../services/carrito.service';
 import { FacturaService } from '../../services/factura.service';
 import { ClienteService } from '../../services/cliente.service';
+import { AdminService } from '../../services/admin.service';
 import { Factura as FacturaModel } from '../../models/Factura';
 import { take } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
@@ -25,6 +26,7 @@ export class Factura implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   clienteService = inject(ClienteService);
+  adminService = inject(AdminService);
   private cdr = inject(ChangeDetectorRef);
 
   private itemsSubscription?: Subscription;
@@ -122,8 +124,8 @@ export class Factura implements OnInit, OnDestroy {
     if (clienteGuardado) {
       try {
         const cliente = JSON.parse(clienteGuardado);
-        this.factura.cedulaC   = cliente.cedula   || '';
-        this.factura.nombreC   = cliente.nombre   || '';
+        this.factura.cedulaC = cliente.cedula || '';
+        this.factura.nombreC = cliente.nombre || '';
         this.factura.telefonoC = cliente.telefono || '';
         if (cliente.direccion) {
           this.factura.direccionC = cliente.direccion;
@@ -278,15 +280,25 @@ export class Factura implements OnInit, OnDestroy {
     this.factura.envio = this.envio;
 
     this.items$.pipe(take(1)).subscribe(items => {
+      if (!items || items.length === 0) {
+        alert('El carrito está vacío. Agrega al menos un producto antes de continuar.');
+        this.procesando = false;
+        this.cdr.detectChanges();
+        return;
+      }
+
       const detalles = items.map(item => ({
         idHeno: item.producto.idHeno,
         cantidad: item.cantidad
       }));
 
+      const usuarioLogueado = this.adminService.getUsuario();
+      const cedulaU = usuarioLogueado?.cedulaU ? usuarioLogueado.cedulaU : null;
+
       const compraDTO = {
         factura: {
           ...this.factura,
-          administrador: { cedulaV: 1 },
+          usuario: cedulaU ? { cedulaU } : null,
           cliente: this.clienteSeleccionado ? { cedula: this.clienteSeleccionado.cedula } : null
         },
         detalles: detalles
@@ -313,7 +325,8 @@ export class Factura implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Error al procesar la compra', err);
-          alert('Ocurrió un error al procesar la compra. Revisa el stock disponible.');
+          const errorMsg = err.error?.error || err.error?.message || err.message || 'Error al procesar la compra.';
+          alert('Error: ' + errorMsg);
           this.procesando = false;
           this.cdr.detectChanges();
         }
@@ -333,10 +346,10 @@ export class Factura implements OnInit, OnDestroy {
       // ── Logo ──────────────────────────────────────────────────────────
       if (this.logoBase64) {
         // Ajustamos el tamaño del logo, mantienendo su relación de aspecto
-        const height = 25; 
+        const height = 25;
         const width = height * this.logoAspectRatio;
         doc.addImage(this.logoBase64, 'PNG', 14, 10, width, height);
-        
+
         doc.setFontSize(22);
         doc.setTextColor(56, 161, 105);
         doc.text("AgroHeno", 14 + width + 5, 24);

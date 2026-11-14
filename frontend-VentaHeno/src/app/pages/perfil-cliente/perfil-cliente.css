@@ -291,12 +291,44 @@
   font-weight: 800;
 }
 
+.tab-counter-badge {
+  background: #036c39;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  line-height: 1;
+}
+
+.tab-btn.active .tab-counter-badge {
+  background: #cca243;
+  color: #ffffff;
+}
+
 /* ── Botón Editar en Header ──────────────────────── */
 .section-header-flex {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 1.5rem;
+  gap: 1.5rem;
+}
+
+.section-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.section-header-text .section-title {
+  margin: 0 !important;
+  line-height: 1.25;
+}
+
+.section-header-text .section-subtitle {
+  margin: 0 !important;
+  line-height: 1.45;
 }
 
 .section-header-flex .section-title {
@@ -345,7 +377,8 @@
 .section-subtitle {
   color: #64748b;
   font-size: 0.9rem;
-  margin: -1rem 0 1.5rem 0;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.45;
 }
 
 .user-stats-strip {
@@ -469,6 +502,70 @@
   font-weight: 500;
 }
 
+.items-table .text-center {
+  text-align: center;
+}
+
+.btn-reportar-tabla {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  color: #166534;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-reportar-tabla:hover {
+  background: #036c39;
+  color: #ffffff;
+  border-color: #036c39;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(3, 108, 57, 0.2);
+}
+
+.ticket-status-actions {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.btn-ticket-disabled,
+.btn-ticket-disabled:hover,
+.btn-reportar-tabla:disabled {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+  opacity: 0.6 !important;
+  pointer-events: none;
+}
+
+.btn-link-seguimiento {
+  background: none;
+  border: none;
+  color: #036c39;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 0.15s ease;
+}
+
+.btn-link-seguimiento:hover {
+  color: #02522b;
+}
+
 .factura-card-footer {
   background: #fafafa;
   padding: 1rem 1.5rem;
@@ -481,6 +578,46 @@
 .factura-shipping {
   font-size: 0.88rem;
   color: #64748b;
+}
+
+.factura-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-radicar-factura {
+  background: #ffffff;
+  border: 1.5px solid #036c39;
+  color: #036c39;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.55rem 1.15rem;
+  border-radius: 30px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-radicar-factura:hover:not(:disabled) {
+  background: #f0fdf4;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(3, 108, 57, 0.15);
+}
+
+.btn-radicar-factura:disabled,
+.btn-radicar-factura.btn-ticket-disabled {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+  opacity: 0.65 !important;
+  pointer-events: none !important;
 }
 
 .btn-download-pdf {
@@ -506,7 +643,9 @@
 }
 
 /* ── Estados de Factura ──────────────────────────── */
-.facturas-loading, .facturas-error, .facturas-empty {
+.facturas-loading,
+.facturas-error,
+.facturas-empty {
   text-align: center;
   padding: 3rem 1rem;
   background: #f8fafc;
@@ -525,7 +664,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-icon {
@@ -533,7 +674,8 @@
   margin-bottom: 0.5rem;
 }
 
-.btn-primary-action, .btn-retry {
+.btn-primary-action,
+.btn-retry {
   background: #036c39;
   color: #ffffff;
   border: none;
@@ -757,6 +899,98 @@
   cursor: not-allowed;
 }
 
+/* ── Pestaña Mis Tickets en Perfil (Diseño Limpio AgroHeno) ───────── */
+.ticket-titulo-clean {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.01em;
+}
+
+.ticket-clean-desc {
+  color: #475569;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0 0 1rem 0;
+}
+
+.ticket-clean-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.meta-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.meta-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.ticket-clean-adjunto {
+  margin-bottom: 0.75rem;
+}
+
+.adjunto-link {
+  color: #036c39;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.adjunto-link:hover {
+  color: #02522b;
+}
+
+.ticket-clean-solution {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  margin-top: 0.75rem;
+}
+
+.solution-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #166534;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.solution-text {
+  color: #15803d;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.ticket-footer-date {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
 /* ── Responsivo ──────────────────────────────────── */
 @media (max-width: 768px) {
   .perfil-top-bar {
@@ -772,7 +1006,8 @@
     margin: 0 auto;
   }
 
-  .info-details-grid, .form-grid-edit {
+  .info-details-grid,
+  .form-grid-edit {
     grid-template-columns: 1fr;
     gap: 1.25rem;
   }
@@ -784,12 +1019,20 @@
     box-sizing: border-box;
   }
 
-  .factura-card-header, .factura-card-footer {
+  .factura-card-header,
+  .factura-card-footer {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
   }
 
+  .factura-footer-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .btn-radicar-factura,
   .btn-download-pdf {
     width: 100%;
     justify-content: center;

@@ -13,6 +13,7 @@ import { GestionHenosComponent } from './pages/gestion-henos/gestion-henos.compo
 import { CrearCliente } from './pages/crear-cliente/crear-cliente';
 import { ReportesClienteComponent } from './pages/reportes-cliente/reportes-cliente.component';
 import { PerfilCliente } from './pages/perfil-cliente/perfil-cliente';
+import { CrearTicketComponent } from './pages/crearTicket/crearTicket';
 
 export const routes: Routes = [
     { path: '', component: ProductoComponent },
@@ -23,6 +24,8 @@ export const routes: Routes = [
     { path: 'factura', component: Factura },
     { path: 'crear-cliente', component: CrearCliente },
     { path: 'perfil-cliente', component: PerfilCliente },
+    { path: 'crearTicket', component: CrearTicketComponent },
+    { path: 'crear-ticket', component: CrearTicketComponent },
     { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
     { path: 'reportes-mes', component: ReportesMesComponent, canActivate: [adminGuard] },
     { path: 'reportes-animal', component: ReportesAnimalComponent, canActivate: [adminGuard] },

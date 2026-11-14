@@ -6,6 +6,8 @@ import { Cliente } from '../../models/Cliente';
 import { ClienteService } from '../../services/cliente.service';
 import { ReportesService } from '../../services/reportes.service';
 import { ReporteVentaCliente, FacturaReporte, DetalleFacturaReporte } from '../../models/reporte-venta.model';
+import { TicketService } from '../../services/ticket.service';
+import { Ticket } from '../../models/ticket';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -20,15 +22,23 @@ export class PerfilCliente implements OnInit {
   private router = inject(Router);
   private clienteService = inject(ClienteService);
   private reportesService = inject(ReportesService);
+  private ticketService = inject(TicketService);
   private cdr = inject(ChangeDetectorRef);
 
   cliente: Cliente | null = null;
-  pestanaActiva: 'perfil' | 'facturas' | 'editar' = 'perfil';
+  pestanaActiva: 'perfil' | 'facturas' | 'tickets' | 'editar' = 'perfil';
 
   // Mis Facturas
   reporteCliente: ReporteVentaCliente | null = null;
   cargandoFacturas: boolean = false;
   errorFacturas: string | null = null;
+
+  // Tickets de Soporte
+  ticketsCliente: Ticket[] = [];
+  facturasConTicket = new Set<number>();
+  ticketsPorFactura = new Map<number, Ticket>();
+  cargandoTickets: boolean = false;
+  errorTickets: string | null = null;
 
   // Editar Perfil
   clienteEdit = {
@@ -62,6 +72,8 @@ export class PerfilCliente implements OnInit {
 
     this.cargarLogo();
     this.iniciarFormularioEdit();
+    this.cargarFacturas();
+    this.cargarTicketsCliente();
   }
 
   private cargarLogo() {
@@ -90,13 +102,18 @@ export class PerfilCliente implements OnInit {
     }
   }
 
-  cambiarPestana(pestana: 'perfil' | 'facturas' | 'editar') {
+  cambiarPestana(pestana: 'perfil' | 'facturas' | 'tickets' | 'editar') {
     this.pestanaActiva = pestana;
     this.mensajeExitoPerfil = null;
     this.mensajeErrorPerfil = null;
 
-    if (pestana === 'facturas' && !this.reporteCliente) {
-      this.cargarFacturas();
+    if (pestana === 'facturas') {
+      if (!this.reporteCliente) {
+        this.cargarFacturas();
+      }
+      this.cargarTicketsCliente();
+    } else if (pestana === 'tickets') {
+      this.cargarTicketsCliente();
     } else if (pestana === 'editar') {
       this.iniciarFormularioEdit();
     }
@@ -113,6 +130,26 @@ export class PerfilCliente implements OnInit {
       next: (data) => {
         this.reporteCliente = data;
         this.cargandoFacturas = false;
+
+        // Comprobar cada factura con obtenerTicketsPorFactura
+        if (this.reporteCliente?.facturas) {
+          this.reporteCliente.facturas.forEach(f => {
+            if (f.idFactura) {
+              this.ticketService.obtenerTicketsPorFactura(f.idFactura).subscribe({
+                next: (ticketsFactura) => {
+                  if (ticketsFactura && ticketsFactura.length > 0) {
+                    this.facturasConTicket.add(Number(f.idFactura));
+                    this.ticketsPorFactura.set(Number(f.idFactura), ticketsFactura[0]);
+                    this.cdr.detectChanges();
+                  }
+                },
+                error: (err) => console.error('Error verificando ticket de factura', f.idFactura, err)
+              });
+            }
+          });
+        }
+
+        this.cargarTicketsCliente();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -122,6 +159,52 @@ export class PerfilCliente implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  cargarTicketsCliente() {
+    if (!this.cliente || !this.cliente.cedula) return;
+
+    this.cargandoTickets = true;
+    this.errorTickets = null;
+
+    this.ticketService.obtenerTicketsPorCliente(this.cliente.cedula).subscribe({
+      next: (tickets) => {
+        this.ticketsCliente = tickets || [];
+
+        this.ticketsCliente.forEach(t => {
+          const idFac = (t.factura as any)?.idFactura || (typeof t.factura === 'number' ? t.factura : null);
+          if (idFac) {
+            const numId = Number(idFac);
+            this.facturasConTicket.add(numId);
+            this.ticketsPorFactura.set(numId, t);
+          }
+        });
+
+        this.cargandoTickets = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al cargar tickets del cliente:', err);
+        this.errorTickets = 'No se pudieron consultar los tickets.';
+        this.cargandoTickets = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  tieneTicketFactura(idFactura: number): boolean {
+    return this.facturasConTicket.has(Number(idFactura));
+  }
+
+  obtenerTicketDeFactura(idFactura: number): Ticket | undefined {
+    return this.ticketsPorFactura.get(idFactura);
+  }
+
+  irAVerTicket(ticket?: Ticket) {
+    if (ticket) {
+      this.pestanaActiva = 'tickets';
+      this.cdr.detectChanges();
+    }
   }
 
   descargarFacturaPDF(f: FacturaReporte) {
@@ -299,6 +382,15 @@ export class PerfilCliente implements OnInit {
 
   volver() {
     this.router.navigate(['/']);
+  }
+
+  irACrearTicket(idFactura?: number, tipoHeno?: string) {
+    const queryParams: any = {};
+    if (idFactura) queryParams.idFactura = idFactura;
+    if (tipoHeno) queryParams.heno = tipoHeno;
+    if (this.cliente?.cedula) queryParams.cedula = this.cliente.cedula;
+
+    this.router.navigate(['/crearTicket'], { queryParams });
   }
 
   cerrarSesion() {

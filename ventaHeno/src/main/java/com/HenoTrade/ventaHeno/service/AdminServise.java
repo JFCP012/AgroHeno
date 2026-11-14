@@ -1,20 +1,24 @@
 package com.HenoTrade.ventaHeno.service;
 
-import com.HenoTrade.ventaHeno.Repository.AdministradorRepositorio;
+import com.HenoTrade.ventaHeno.Entity.Usuario;
+import com.HenoTrade.ventaHeno.Repository.UsuarioRepositorio;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class AdminServise {
 
-    private final AdministradorRepositorio repositorio;
+    private final UsuarioRepositorio repositorio;
 
-    public AdminServise(AdministradorRepositorio repositorio) {
+    public AdminServise(UsuarioRepositorio repositorio) {
         this.repositorio = repositorio;
     }
 
-    public boolean loginAdmin(Long cedulaV, String clave) {
+    public Optional<Usuario> loginAdmin(Long cedulaU, String clave) {
         return this.repositorio.findAll().stream()
-                .anyMatch(admin -> admin.getCedulaV().equals(cedulaV)
-                        && admin.getClave().equals(clave));
+                .filter(admin -> (admin.getCedulaU() != null && admin.getCedulaU().equals(cedulaU))
+                        && admin.getClave().equals(clave))
+                .findFirst();
     }
 }

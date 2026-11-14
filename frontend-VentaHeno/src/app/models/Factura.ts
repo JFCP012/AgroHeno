@@ -1,6 +1,6 @@
 export interface Factura {
     idFactura: number;
-    cedulaV: string;
+    cedulaU?: string;
     fechaFactura: string;
     totalVenta: number;
     nombreC: string;

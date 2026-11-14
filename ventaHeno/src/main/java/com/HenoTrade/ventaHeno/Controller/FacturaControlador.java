@@ -1,7 +1,10 @@
 package com.HenoTrade.ventaHeno.Controller;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +29,16 @@ public class FacturaControlador {
     }
 
     @PostMapping("/procesarCompra")
-    public Factura procesarCompra(@RequestBody CompraDTO compraDTO) {
-        return this.facturaServise.procesarCompra(compraDTO);
+    public ResponseEntity<?> procesarCompra(@RequestBody CompraDTO compraDTO) {
+        try {
+            Factura facturaGuardada = this.facturaServise.procesarCompra(compraDTO);
+            return ResponseEntity.ok(facturaGuardada);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error inesperado al procesar la compra: " + e.getMessage()));
+        }
     }
 }

@@ -101,18 +101,27 @@ export class ProductoComponent implements OnInit {
     }
 
     this.adminService.loginAdmin(this.idAdminInput, this.claveInput).subscribe({
-      next: (isValid) => {
-        if (isValid) {
+      next: (resp) => {
+        if (resp && typeof resp === 'object') {
+          const rol = (resp.rol || 'ADMIN').toUpperCase();
+          if (rol === 'ADMIN') {
+            this.mostrarModalLogin = false;
+            this.router.navigate(['/admin']);
+          } else {
+            this.mostrarModalLogin = false;
+            alert(`Inicio de sesión correcto como ${resp.nombre || 'Usuario'} (Rol: ${rol}). Tu rol no tiene acceso a la sección de Administración.`);
+          }
+        } else if (resp === true) {
           this.mostrarModalLogin = false;
           this.router.navigate(['/admin']);
         } else {
-          this.loginError = 'ID de Admin o clave incorrectos';
+          this.loginError = 'ID o clave incorrectos';
         }
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error al iniciar sesión como Admin:', err);
-        this.loginError = 'Error de conexión con el servidor';
+        console.error('Error al iniciar sesión:', err);
+        this.loginError = 'ID o clave incorrectos';
         this.cdr.detectChanges();
       }
     });

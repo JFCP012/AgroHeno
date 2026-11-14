@@ -33,8 +33,9 @@ public class Factura {
     private Long idFactura;
 
     @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @JoinColumn(name = "cedulaV", referencedColumnName = "cedulaV")
-    private Administrador administrador;
+    @JoinColumn(name = "cedulaU", nullable = true)
+    @NotFound(action = NotFoundAction.IGNORE)
+    private Usuario usuario;
 
     @Column(name = "fechaFactura", nullable = false)
     private Date fechaFactura;
@@ -63,4 +64,3 @@ public class Factura {
     private Cliente cliente;
 
 }
-
