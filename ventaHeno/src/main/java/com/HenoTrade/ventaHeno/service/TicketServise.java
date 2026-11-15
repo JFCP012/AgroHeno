@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.HenoTrade.ventaHeno.Entity.Cliente;
 import com.HenoTrade.ventaHeno.Entity.Factura;
-import com.HenoTrade.ventaHeno.Entity.Heno;
 import com.HenoTrade.ventaHeno.Entity.Ticket;
 import com.HenoTrade.ventaHeno.Entity.Usuario;
 import com.HenoTrade.ventaHeno.Repository.ClienteRepositorio;
@@ -42,6 +41,9 @@ public class TicketServise {
 
     @Autowired
     private Cloudinary cloudinary;
+
+    @Autowired
+    private EmailService emailService;
 
     @Transactional
     public Ticket CrearTicket(String ticketJson, MultipartFile archivoImagen) throws IOException {
@@ -77,7 +79,8 @@ public class TicketServise {
             Factura facturaDb = this.facturaRepositorio.findById(ticket.getFactura().getIdFactura()).orElse(null);
             ticket.setFactura(facturaDb);
 
-            // Si el cliente no se había asociado pero la factura sí tiene cédula, asociar el cliente de la factura
+            // Si el cliente no se había asociado pero la factura sí tiene cédula, asociar
+            // el cliente de la factura
             if (ticket.getCliente() == null && facturaDb != null && facturaDb.getCedulaC() != null) {
                 Cliente clienteDeFactura = this.clienteRepositorio.findById(facturaDb.getCedulaC().trim()).orElse(null);
                 ticket.setCliente(clienteDeFactura);
@@ -99,8 +102,27 @@ public class TicketServise {
         ticket.setRespuesta(null);
         ticket.setTecnicoAsignado(null);
 
-        // 7. Guardar y retornar
-        return this.ticketRepositorio.save(ticket);
+        // 7. Guardar ticket
+        Ticket ticketGuardado = this.ticketRepositorio.save(ticket);
+
+        // 8. Enviar correo de confirmación de radicado al cliente (si tiene correo
+        // registrado)
+        try {
+            Cliente clienteDestino = ticketGuardado.getCliente();
+            if (clienteDestino != null && clienteDestino.getCorreo() != null
+                    && !clienteDestino.getCorreo().trim().isEmpty()) {
+                this.emailService.enviarNotificacionTicketRadicado(
+                        ticketGuardado,
+                        clienteDestino.getCorreo().trim(),
+                        clienteDestino.getNombre());
+            }
+        } catch (Exception e) {
+            // Protección: Cualquier problema de red o SMTP nunca interrumpe la radicación
+            // del ticket
+            System.err.println("Aviso: No se pudo despachar el correo de notificación del ticket: " + e.getMessage());
+        }
+
+        return ticketGuardado;
     }
 
     /**
@@ -188,9 +210,30 @@ public class TicketServise {
         ticket.setSlaVencido(false);
     }
 
-    // Listar todos los tickets
+    // Listar todos los tickets (ordenados de forma ascendente por fecha límite para
+    // priorizar los más próximos a vencerse)
     public List<Ticket> buscarTodos() {
-        return this.ticketRepositorio.findAll();
+        return this.ticketRepositorio.findAll(org.springframework.data.domain.Sort
+                .by(org.springframework.data.domain.Sort.Direction.ASC, "fechaLimite")
+                .and(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC,
+                        "idTicket")));
+    }
+
+    // Filtrar tickets en la base de datos (PostgreSQL) por estado, prioridad,
+    // categoría y búsqueda textual
+    public List<Ticket> filtrarTickets(String estado, String prioridad, String categoria, String busqueda) {
+        String Estado = (estado != null && !estado.trim().isEmpty() && !estado.equalsIgnoreCase("TODOS"))
+                ? estado.trim()
+                : null;
+        String Prioridad = (prioridad != null && !prioridad.trim().isEmpty() && !prioridad.equalsIgnoreCase("TODAS"))
+                ? prioridad.trim()
+                : null;
+        String Categoria = (categoria != null && !categoria.trim().isEmpty() && !categoria.equalsIgnoreCase("TODAS"))
+                ? categoria.trim()
+                : null;
+        String Busqueda = (busqueda != null && !busqueda.trim().isEmpty()) ? busqueda.trim() : null;
+
+        return this.ticketRepositorio.filtrarTickets(Estado, Prioridad, Categoria, Busqueda);
     }
 
     // Listar tickets de un cliente
@@ -201,9 +244,60 @@ public class TicketServise {
         return this.ticketRepositorio.buscarPorCedulaCliente(cedula.trim());
     }
 
+    public List<Ticket> buscarPorAsesor(String cedula) {
+        return buscarPorAsesor(cedula, null);
+    }
+
+    public List<Ticket> buscarPorAsesor(String cedula, String busqueda) {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            return List.of();
+        }
+        try {
+            Long cedulaLong = Long.parseLong(cedula.trim());
+            if (busqueda != null && !busqueda.trim().isEmpty()) {
+                return this.ticketRepositorio.buscarPorAsesorYFiltro(cedulaLong, busqueda.trim());
+            }
+            return this.ticketRepositorio.buscarPorCedulaAsesor(cedulaLong);
+        } catch (NumberFormatException e) {
+            return List.of();
+        }
+    }
+
+    public List<Ticket> buscarAtendidosPorAsesor(String cedula, Integer anio, Integer mes, Integer dia) {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            return List.of();
+        }
+        try {
+            Long cedulaLong = Long.parseLong(cedula.trim());
+            return this.ticketRepositorio.buscarAtendidosPorAsesorYFecha(cedulaLong, anio, mes, dia);
+        } catch (NumberFormatException e) {
+            return List.of();
+        }
+    }
+
+    public List<Ticket> buscarPorAsesorYEstado(String cedula) {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            return List.of();
+        }
+        try {
+            Long cedulaLong = Long.parseLong(cedula.trim());
+            return this.ticketRepositorio.buscarPorCedulaAsesorYestado(cedulaLong);
+        } catch (NumberFormatException e) {
+            return List.of();
+        }
+    }
+
     // Listar tickets de una factura
     public List<Ticket> buscarPorFactura(Long idFactura) {
         return this.ticketRepositorio.findByFacturaIdFactura(idFactura);
+    }
+
+    // Listar exclusivamente usuarios con rol asesor
+    public List<Usuario> listarAsesores() {
+        List<Usuario> lista = this.usuarioRepositorio.findAsesores();
+        // Ocultar contraseñas antes de serializar
+        lista.forEach(u -> u.setClave(null));
+        return lista;
     }
 
     // Asignar técnico al ticket
@@ -217,7 +311,23 @@ public class TicketServise {
 
         ticket.setTecnicoAsignado(tecnico);
         ticket.setEstadoTicket("EN_ANALISIS");
-        return this.ticketRepositorio.save(ticket);
+        Ticket ticketGuardado = this.ticketRepositorio.save(ticket);
+
+        // Enviar correo de notificación al cliente con los datos del asesor asignado
+        try {
+            Cliente cliente = ticketGuardado.getCliente();
+            if (cliente != null && cliente.getCorreo() != null && !cliente.getCorreo().trim().isEmpty()) {
+                this.emailService.enviarNotificacionAsesorAsignado(
+                        ticketGuardado,
+                        tecnico,
+                        cliente.getCorreo().trim(),
+                        cliente.getNombre());
+            }
+        } catch (Exception e) {
+            System.err.println("Aviso: No se pudo despachar el correo de asignación de asesor: " + e.getMessage());
+        }
+
+        return ticketGuardado;
     }
 
     // Dar solución y cerrar ticket
@@ -229,7 +339,23 @@ public class TicketServise {
         ticket.setRespuesta(respuesta);
         ticket.setFechaFin(LocalDateTime.now());
         ticket.setEstadoTicket("RESUELTO");
-        return this.ticketRepositorio.save(ticket);
+        Ticket ticketGuardado = this.ticketRepositorio.save(ticket);
+
+        // Enviar correo de notificación al cliente informando la solución del ticket
+        try {
+            Cliente cliente = ticketGuardado.getCliente();
+            if (cliente != null && cliente.getCorreo() != null && !cliente.getCorreo().trim().isEmpty()) {
+                this.emailService.enviarNotificacionTicketResuelto(
+                        ticketGuardado,
+                        respuesta,
+                        cliente.getCorreo().trim(),
+                        cliente.getNombre());
+            }
+        } catch (Exception e) {
+            System.err.println("Aviso: No se pudo despachar el correo de solución del ticket: " + e.getMessage());
+        }
+
+        return ticketGuardado;
     }
 
 }

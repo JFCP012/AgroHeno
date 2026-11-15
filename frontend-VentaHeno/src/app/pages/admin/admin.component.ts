@@ -22,6 +22,10 @@ export class AdminComponent {
     this.router.navigate(['/gestion-henos']);
   }
 
+  irAGestionTickets() {
+    this.router.navigate(['/gestion-tickets']);
+  }
+
   volverTienda() {
     this.router.navigate(['/producto']);
   }

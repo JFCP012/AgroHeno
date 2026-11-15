@@ -1,0 +1,338 @@
+<!-- HEADER SUPERIOR INSTITUCIONAL AGROHENO -->
+<header class="admin-top-header">
+  <div class="admin-header-inner">
+    <!-- Left: Cerrar sesión -->
+    <div class="admin-header-left">
+      <button class="btn-admin-logout" (click)="cerrarSesion()">Cerrar Sesión 🔓</button>
+    </div>
+    <!-- Center: Logotipo oficial -->
+    <div class="admin-header-branding">
+      <img src="assets/Imagenes/Logo2.png" alt="AgroHeno Logo" class="admin-header-logo">
+      <div class="admin-brand-text">
+        <span class="brand-main">AgroHeno</span>
+        <span class="brand-sub">ASESOR DE TICKETS</span>
+      </div>
+    </div>
+    <!-- Right: Badge Asesor -->
+    <div class="admin-header-right">
+      <span class="admin-header-badge">
+        Asesor: {{ asesorActual?.nombre || 'Técnico' }} 🎧
+      </span>
+    </div>
+  </div>
+</header>
+
+<div class="tickets-page-container">
+  <!-- ENCABEZADO DE PÁGINA -->
+  <div class="page-title-row">
+    <div class="title-text-wrap">
+      <h1>Mis Tickets Asignados</h1>
+      <p>Gestión técnica, atención y resolución directa de requerimientos asignados</p>
+    </div>
+    <button class="btn-refresh-simple" (click)="cargarTicketsAsesor()" [disabled]="cargando" title="Actualizar listado">
+      {{ cargando ? 'Consultando...' : 'Actualizar' }}
+    </button>
+  </div>
+
+  <!-- BARRA DE MÉTRICAS MINIMALISTA -->
+  <div class="metrics-bar">
+    <div class="metric-item">
+      <span class="metric-label">Total Asignados</span>
+      <span class="metric-val">{{ totalAsignados }}</span>
+    </div>
+    <div class="metric-divider"></div>
+
+    <div class="metric-item">
+      <span class="metric-label">En Atención</span>
+      <span class="metric-val">{{ totalEnAtencion }}</span>
+    </div>
+    <div class="metric-divider"></div>
+
+    <div class="metric-item">
+      <span class="metric-label">Resueltos</span>
+      <span class="metric-val metric-success">{{ totalResueltos }}</span>
+    </div>
+
+    <ng-container *ngIf="totalCriticos > 0">
+      <div class="metric-divider"></div>
+      <div class="metric-item">
+        <span class="metric-label">Críticos</span>
+        <span class="metric-val metric-danger">{{ totalCriticos }}</span>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- BARRA DE FILTROS Y BÚSQUEDA -->
+  <div class="toolbar-box">
+    <!-- Buscador de texto (Radicado, Cliente o Cédula) -->
+    <div class="search-input-box">
+      <svg class="search-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" [(ngModel)]="filtroTexto" (ngModelChange)="onBusquedaChange($event)"
+        placeholder="Buscar por radicado, cliente o cédula..." class="search-field">
+    </div>
+
+    <!-- Filtros de fecha para tickets atendidos -->
+    <div class="selectors-wrap">
+      <div class="select-group">
+        <label for="fechaAtencion">📅 Atendidos en:</label>
+        <input id="fechaAtencion" type="date" [(ngModel)]="filtroFecha" (change)="onFechaChange()"
+          class="minimal-date-input" title="Consultar tickets resueltos por fecha específica">
+      </div>
+
+      <div class="select-group">
+        <label for="mesAtencion">Mes:</label>
+        <select id="mesAtencion" [(ngModel)]="filtroMes" (change)="onMesChange()" class="minimal-select">
+          <option value="">Seleccionar mes...</option>
+          <option value="1">Enero</option>
+          <option value="2">Febrero</option>
+          <option value="3">Marzo</option>
+          <option value="4">Abril</option>
+          <option value="5">Mayo</option>
+          <option value="6">Junio</option>
+          <option value="7">Julio</option>
+          <option value="8">Agosto</option>
+          <option value="9">Septiembre</option>
+          <option value="10">Octubre</option>
+          <option value="11">Noviembre</option>
+          <option value="12">Diciembre</option>
+        </select>
+      </div>
+
+      <button *ngIf="filtroTexto || filtroFecha || filtroMes"
+        (click)="limpiarFiltros()" class="btn-clear-filters">
+        Ver pendientes
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTENEDOR DE TABLA -->
+  <div class="table-card-wrapper">
+    <!-- Estado de carga -->
+    <div *ngIf="cargando" class="loading-state-simple">
+      <div class="spinner-small"></div>
+      <span>Cargando tus tickets asignados...</span>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div *ngIf="error && !cargando" class="error-banner-simple">
+      <span>⚠</span> {{ error }}
+      <button (click)="cargarTicketsAsesor()" class="btn-retry">Reintentar</button>
+    </div>
+
+    <!-- Estado vacío sin tickets asignados -->
+    <div *ngIf="!cargando && !error && tickets.length === 0" class="empty-state-simple">
+      <p>No tienes tickets asignados en este momento.</p>
+      <span class="empty-sub">Los requerimientos asignados por el gestor técnico aparecerán aquí.</span>
+    </div>
+
+    <!-- Estado vacío con filtros activos -->
+    <div *ngIf="!cargando && !error && tickets.length > 0 && ticketsFiltrados.length === 0" class="empty-state-simple">
+      <p>No se encontraron tickets con los criterios de búsqueda aplicados.</p>
+      <button (click)="limpiarFiltros()" class="btn-text-link">Quitar filtros</button>
+    </div>
+
+    <!-- Tabla sobria AgroHeno -->
+    <table *ngIf="!cargando && ticketsFiltrados.length > 0" class="minimal-table">
+      <thead>
+        <tr>
+          <th>Radicado</th>
+          <th>Cliente</th>
+          <th>Asunto / Problema</th>
+          <th>Categoría</th>
+          <th class="text-center">Factura</th>
+          <th>Prioridad</th>
+          <th>Estado</th>
+          <th>Límite SLA / Radicado</th>
+          <th class="th-acciones">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ticket of ticketsFiltrados" class="table-row-hover" (click)="abrirDetalle(ticket)">
+          <!-- Radicado -->
+          <td class="td-radicado">
+            {{ ticket.codigoRadicado || ('TKT-' + ticket.idTicket) }}
+          </td>
+
+          <!-- Cliente -->
+          <td>
+            <div class="cliente-cell">
+              <span class="cliente-name">{{ getClienteNombre(ticket) }}</span>
+              <span class="cliente-doc">CC: {{ getClienteCedula(ticket) }}</span>
+            </div>
+          </td>
+
+          <!-- Asunto y descripción breve -->
+          <td class="td-asunto">
+            <span class="asunto-title">{{ ticket.tituloTicket }}</span>
+            <span class="asunto-desc">{{ ticket.descripcionTicket }}</span>
+          </td>
+
+          <!-- Categoría -->
+          <td class="td-muted">
+            {{ getCategoriaLabel(ticket.categoriaTicket) }}
+          </td>
+
+          <!-- Factura -->
+          <td class="td-muted text-center">
+            {{ getFacturaId(ticket) }}
+          </td>
+
+          <!-- Prioridad -->
+          <td>
+            <span class="prio-tag" [ngClass]="getPrioridadClass(ticket.prioridad)">
+              <span class="dot"></span>
+              {{ ticket.prioridad || 'MEDIA' }}
+            </span>
+          </td>
+
+          <!-- Estado -->
+          <td>
+            <span class="status-badge" [ngClass]="getEstadoClass(ticket.estadoTicket)">
+              {{ ticket.estadoTicket || 'RADICADO' }}
+            </span>
+          </td>
+
+          <!-- Límite SLA / Radicado -->
+          <td class="td-fechas">
+            <div class="fecha-limite-principal"
+              [class.sla-danger]="esSlaVencido(ticket)"
+              [class.sla-warning]="!esSlaVencido(ticket) && esSlaUrgente(ticket)">
+              <span>{{ ticket.fechaLimite | date:'dd/MM/yyyy hh:mm a' }}</span>
+              <span *ngIf="esSlaVencido(ticket)" class="sla-mini-tag danger">¡Vencido!</span>
+              <span *ngIf="!esSlaVencido(ticket) && esSlaUrgente(ticket)" class="sla-mini-tag warning">Próximo</span>
+            </div>
+            <span *ngIf="!ticket.fechaLimite" class="fecha-limite-principal text-muted">
+              Sin límite
+            </span>
+            <span class="fecha-rad-sub">
+              Radicado: {{ ticket.fechaInicio | date:'dd/MM/yyyy' }}
+            </span>
+          </td>
+
+          <!-- Acción: Ver detalle dorado -->
+          <td class="td-acciones" (click)="$event.stopPropagation()">
+            <div class="action-buttons-wrap">
+              <button class="btn-action-gold" (click)="abrirDetalle(ticket)" title="Ver y resolver ticket">
+                Ver detalle
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL DE DETALLE Y RESOLUCIÓN DE TICKET -->
+<div class="modal-backdrop" *ngIf="mostrarModalDetalle && ticketSeleccionado" (click)="cerrarModalDetalle()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <!-- Header del modal -->
+    <div class="modal-card-header">
+      <div>
+        <span class="modal-rad-label">{{ ticketSeleccionado.codigoRadicado || ('TKT-' + ticketSeleccionado.idTicket) }}</span>
+        <h2>{{ ticketSeleccionado.tituloTicket }}</h2>
+      </div>
+      <button class="modal-btn-close" (click)="cerrarModalDetalle()" title="Cerrar">×</button>
+    </div>
+
+    <!-- Body del modal -->
+    <div class="modal-card-body">
+      <!-- Banners de respuesta -->
+      <div *ngIf="mensajeExitoResolucion" class="alert-banner-success">
+        <span>✓</span> {{ mensajeExitoResolucion }}
+      </div>
+      <div *ngIf="errorResolucion" class="alert-banner-error">
+        <span>⚠</span> {{ errorResolucion }}
+      </div>
+
+      <!-- Metadatos rápidos -->
+      <div class="modal-meta-grid">
+        <div class="meta-block">
+          <span class="meta-label">Estado</span>
+          <span class="status-badge" [ngClass]="getEstadoClass(ticketSeleccionado.estadoTicket)">
+            {{ ticketSeleccionado.estadoTicket }}
+          </span>
+        </div>
+        <div class="meta-block">
+          <span class="meta-label">Prioridad</span>
+          <span class="prio-tag" [ngClass]="getPrioridadClass(ticketSeleccionado.prioridad)">
+            <span class="dot"></span>
+            {{ ticketSeleccionado.prioridad || 'MEDIA' }}
+          </span>
+        </div>
+        <div class="meta-block">
+          <span class="meta-label">Categoría</span>
+          <span class="meta-value">{{ getCategoriaLabel(ticketSeleccionado.categoriaTicket) }}</span>
+        </div>
+        <div class="meta-block">
+          <span class="meta-label">Factura</span>
+          <span class="meta-value">{{ getFacturaId(ticketSeleccionado) }}</span>
+        </div>
+      </div>
+
+      <!-- Datos del Cliente -->
+      <div class="modal-group">
+        <h3>Datos del Cliente</h3>
+        <div class="info-columns">
+          <div><strong>Nombre:</strong> {{ getClienteNombre(ticketSeleccionado) }}</div>
+          <div><strong>Cédula:</strong> {{ getClienteCedula(ticketSeleccionado) }}</div>
+          <div *ngIf="getClienteTelefono(ticketSeleccionado)"><strong>Teléfono:</strong> {{ getClienteTelefono(ticketSeleccionado) }}</div>
+          <div *ngIf="getClienteCorreo(ticketSeleccionado)"><strong>Correo:</strong> {{ getClienteCorreo(ticketSeleccionado) }}</div>
+        </div>
+      </div>
+
+      <!-- Descripción del problema -->
+      <div class="modal-group">
+        <h3>Descripción del Caso</h3>
+        <p class="description-text">{{ ticketSeleccionado.descripcionTicket }}</p>
+      </div>
+
+      <!-- Evidencia gráfica si existe -->
+      <div class="modal-group" *ngIf="ticketSeleccionado.evidenciaImg">
+        <h3>Evidencia Gráfica</h3>
+        <a [href]="ticketSeleccionado.evidenciaImg" target="_blank" rel="noopener noreferrer">
+          <img [src]="ticketSeleccionado.evidenciaImg" alt="Evidencia" class="evidence-thumb">
+        </a>
+      </div>
+
+      <!-- Plazos y SLA -->
+      <div class="modal-group">
+        <h3>Fechas y Plazos</h3>
+        <div class="info-columns text-sm">
+          <div><strong>Radicado:</strong> {{ ticketSeleccionado.fechaInicio | date:'dd/MM/yyyy hh:mm a' }}</div>
+          <div *ngIf="ticketSeleccionado.fechaLimite"><strong>Límite SLA:</strong> {{ ticketSeleccionado.fechaLimite | date:'dd/MM/yyyy hh:mm a' }}</div>
+          <div *ngIf="ticketSeleccionado.fechaFin"><strong>Resuelto:</strong> {{ ticketSeleccionado.fechaFin | date:'dd/MM/yyyy hh:mm a' }}</div>
+        </div>
+      </div>
+
+      <!-- Sección de Solución / Resolución Técnica -->
+      <div class="modal-group resolution-group">
+        <h3>Solución / Respuesta al Cliente</h3>
+
+        <!-- Si ya está resuelto -->
+        <div *ngIf="ticketSeleccionado.estadoTicket === 'RESUELTO' || ticketSeleccionado.estadoTicket === 'CERRADO'" class="resolved-box">
+          <p class="solution-text">{{ ticketSeleccionado.respuesta || 'Caso resuelto sin observaciones adicionales.' }}</p>
+          <span class="resolved-meta">✓ Atendido por {{ asesorActual?.nombre }} el {{ ticketSeleccionado.fechaFin | date:'dd/MM/yyyy hh:mm a' }}</span>
+        </div>
+
+        <!-- Si está en análisis o en atención: formulario para resolver -->
+        <div *ngIf="ticketSeleccionado.estadoTicket !== 'RESUELTO' && ticketSeleccionado.estadoTicket !== 'CERRADO'">
+          <label class="input-lbl">Escribe la respuesta o solución brindada al cliente:</label>
+          <textarea [(ngModel)]="respuestaResolucion" rows="4" class="solution-textarea"
+            placeholder="Describe la solución aplicada, detalles del reemplazo o atención prestada al cliente..."></textarea>
+          <button class="btn-resolve-ticket" (click)="resolverTicket()" [disabled]="guardandoResolucion || !respuestaResolucion.trim()">
+            {{ guardandoResolucion ? 'Guardando solución...' : '✓ Dar Solución y Resolver Ticket' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer del modal -->
+    <div class="modal-card-footer">
+      <button class="btn-close-modal" (click)="cerrarModalDetalle()">Cerrar</button>
+    </div>
+  </div>
+</div>
