@@ -64,7 +64,9 @@ export class App implements OnInit {
     this.esRutaExcluida = url.includes('/admin') ||
       url.includes('/crear-producto') ||
       url.includes('reportes') ||
-      url.includes('/gestion-henos');
+      url.includes('/gestion-henos') ||
+      url.includes('/gestion-tickets') ||
+      url.includes('/asesor-tickets');
   }
 
   get cantidadEnCarrito() {

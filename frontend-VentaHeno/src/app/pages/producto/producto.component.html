@@ -138,15 +138,15 @@
     <div class="modal-overlay" *ngIf="mostrarModalLogin" (click)="cerrarModalLogin()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>Ingreso Administrador</h2>
+          <h2>Ingreso Administrativo y Soporte</h2>
           <button class="modal-close-btn" (click)="cerrarModalLogin()">×</button>
         </div>
         <div class="modal-body">
           <form (ngSubmit)="submitLoginAdmin()">
             <div class="form-group-modal">
-              <label for="idAdmin">ID Administrador</label>
+              <label for="idAdmin">Cédula / ID de Usuario</label>
               <input type="number" id="idAdmin" name="idAdmin" [(ngModel)]="idAdminInput" required
-                placeholder="Ingrese su ID de Admin">
+                placeholder="Ingrese su ID o cédula">
             </div>
             <div class="form-group-modal">
               <label for="clave">Contraseña</label>

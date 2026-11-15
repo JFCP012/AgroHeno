@@ -3,7 +3,6 @@ package com.HenoTrade.ventaHeno.service;
 import com.HenoTrade.ventaHeno.Entity.Usuario;
 import com.HenoTrade.ventaHeno.Repository.UsuarioRepositorio;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 
 @Service
@@ -21,4 +20,5 @@ public class AdminServise {
                         && admin.getClave().equals(clave))
                 .findFirst();
     }
+
 }

@@ -103,13 +103,19 @@ export class ProductoComponent implements OnInit {
     this.adminService.loginAdmin(this.idAdminInput, this.claveInput).subscribe({
       next: (resp) => {
         if (resp && typeof resp === 'object') {
-          const rol = (resp.rol || 'ADMIN').toUpperCase();
-          if (rol === 'ADMIN') {
-            this.mostrarModalLogin = false;
+          const rawRol = (resp.rol || 'ADMIN').toUpperCase().trim();
+          const cleanRol = rawRol.replace(/[^A-Z]/g, '');
+
+          this.mostrarModalLogin = false;
+
+          if (rawRol === 'ADMIN') {
             this.router.navigate(['/admin']);
+          } else if (cleanRol === 'GESTORTICKETS' || cleanRol === 'GESTOR' || cleanRol.includes('TICKET')) {
+            this.router.navigate(['/gestion-tickets']);
+          } else if (cleanRol === 'ASESOR' || cleanRol.includes('ASESOR') || cleanRol.includes('TECNICO')) {
+            this.router.navigate(['/asesor-tickets']);
           } else {
-            this.mostrarModalLogin = false;
-            alert(`Inicio de sesión correcto como ${resp.nombre || 'Usuario'} (Rol: ${rol}). Tu rol no tiene acceso a la sección de Administración.`);
+            alert(`Inicio de sesión correcto como ${resp.nombre || 'Usuario'} (Rol: ${resp.rol}). No cuentas con permisos para este panel.`);
           }
         } else if (resp === true) {
           this.mostrarModalLogin = false;

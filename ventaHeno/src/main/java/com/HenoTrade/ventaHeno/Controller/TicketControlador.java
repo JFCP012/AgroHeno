@@ -8,12 +8,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.HenoTrade.ventaHeno.Entity.Ticket;
+import com.HenoTrade.ventaHeno.Entity.Usuario;
 import com.HenoTrade.ventaHeno.service.TicketServise;
 
 @RestController
@@ -40,6 +43,15 @@ public class TicketControlador {
         return this.ticketServise.buscarTodos();
     }
 
+    @GetMapping("/filtrar")
+    public List<Ticket> filtrarTickets(
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String prioridad,
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) String busqueda) {
+        return this.ticketServise.filtrarTickets(estado, prioridad, categoria, busqueda);
+    }
+
     @GetMapping("/cliente/{cedula}")
     public List<Ticket> listarPorCliente(@PathVariable String cedula) {
         return this.ticketServise.buscarPorCliente(cedula);
@@ -49,4 +61,60 @@ public class TicketControlador {
     public List<Ticket> listarPorFactura(@PathVariable Long idFactura) {
         return this.ticketServise.buscarPorFactura(idFactura);
     }
+
+    @GetMapping("/asesores")
+    public List<Usuario> listarAsesores() {
+        return this.ticketServise.listarAsesores();
+    }
+
+    @PutMapping("/{idTicket}/asignarTecnico")
+    public ResponseEntity<?> asignarTecnico(
+            @PathVariable Long idTicket,
+            @RequestParam Long cedulaTecnico) {
+        try {
+            Ticket ticketActualizado = this.ticketServise.asignarTecnico(idTicket, cedulaTecnico);
+            return ResponseEntity.ok(ticketActualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping(value = { "/BuscarPorAsesor/{cedula}", "/BuscarPorAsesor" })
+    public List<Ticket> BuscarPorAsesor(
+            @PathVariable(value = "cedula", required = false) String cedulaPath,
+            @RequestParam(value = "cedula", required = false) String cedula,
+            @RequestParam(value = "busqueda", required = false) String busqueda) {
+        String finalCedula = (cedulaPath != null && !cedulaPath.trim().isEmpty()) ? cedulaPath : cedula;
+        return this.ticketServise.buscarPorAsesor(finalCedula, busqueda);
+    }
+
+    @GetMapping(value = { "/atendidosPorAsesor/{cedula}" })
+    public List<Ticket> buscarAtendidosPorAsesor(
+            @PathVariable String cedula,
+            @RequestParam(required = false) Integer anio,
+            @RequestParam(required = false) Integer mes,
+            @RequestParam(required = false) Integer dia) {
+        return this.ticketServise.buscarAtendidosPorAsesor(cedula, anio, mes, dia);
+    }
+
+    @GetMapping(value = { "/BuscarPorAsesorYEstado/{cedula}" })
+    public List<Ticket> BuscarPorAsesorYEstado(
+            @PathVariable(value = "cedula", required = false) String cedulaPath,
+            @RequestParam(value = "cedula", required = false) String cedula) {
+        String finalCedula = (cedulaPath != null && !cedulaPath.trim().isEmpty()) ? cedulaPath : cedula;
+        return this.ticketServise.buscarPorAsesorYEstado(finalCedula);
+    }
+
+    @PutMapping("/{idTicket}/resolver")
+    public ResponseEntity<?> resolverTicket(
+            @PathVariable Long idTicket,
+            @RequestParam String respuesta) {
+        try {
+            Ticket ticketResuelto = this.ticketServise.resolverTicket(idTicket, respuesta);
+            return ResponseEntity.ok(ticketResuelto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }

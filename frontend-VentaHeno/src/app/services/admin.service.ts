@@ -44,6 +44,18 @@ export class AdminService {
     return rol === 'ADMIN' || (sessionStorage.getItem('isAdmin') === 'true' && !rol);
   }
 
+  isGestorTicketsLoggedIn(): boolean {
+    const rawRol = (sessionStorage.getItem('rol') || '').toUpperCase().trim();
+    const cleanRol = rawRol.replace(/[^A-Z]/g, '');
+    return cleanRol === 'GESTORTICKETS' || cleanRol === 'GESTOR' || cleanRol.includes('TICKET') || rawRol === 'ADMIN';
+  }
+
+  isAsesorLoggedIn(): boolean {
+    const rawRol = (sessionStorage.getItem('rol') || '').toUpperCase().trim();
+    const cleanRol = rawRol.replace(/[^A-Z]/g, '');
+    return cleanRol === 'ASESOR' || cleanRol.includes('ASESOR') || cleanRol.includes('TECNICO') || rawRol === 'ADMIN';
+  }
+
   getRol(): string | null {
     return sessionStorage.getItem('rol');
   }

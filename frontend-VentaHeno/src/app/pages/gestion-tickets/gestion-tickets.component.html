@@ -1,0 +1,443 @@
+<!-- HEADER SUPERIOR INSTITUCIONAL AGROHENO -->
+<header class="admin-top-header">
+  <div class="admin-header-inner">
+    <!-- Left: Cerrar sesión -->
+    <div class="admin-header-left">
+      <button class="btn-admin-logout" (click)="cerrarSesion()">Cerrar Sesión 🔓</button>
+    </div>
+    <!-- Center: Logotipo oficial -->
+    <div class="admin-header-branding">
+      <img src="assets/Imagenes/Logo2.png" alt="AgroHeno Logo" class="admin-header-logo">
+      <div class="admin-brand-text">
+        <span class="brand-main">AgroHeno</span>
+        <span class="brand-sub">GESTIÓN DE TICKETS</span>
+      </div>
+    </div>
+    <!-- Right: Badge -->
+    <div class="admin-header-right">
+      <span class="admin-header-badge">Gestor Tickets 📋</span>
+    </div>
+  </div>
+</header>
+
+<div class="tickets-page-container">
+  <!-- ENCABEZADO DE PÁGINA -->
+  <div class="page-title-row">
+    <div class="title-text-wrap">
+      <h1>Gestión de Tickets</h1>
+      <p>Supervisión, atención técnica y resolución de requerimientos de soporte</p>
+    </div>
+    <button class="btn-refresh-simple" (click)="cargarTickets()" [disabled]="cargando" title="Actualizar listado">
+      {{ cargando ? 'Consultando...' : 'Actualizar' }}
+    </button>
+  </div>
+
+  <!-- BARRA DE MÉTRICAS MINIMALISTA (Unificada, sobria, sin burbujas) -->
+  <div class="metrics-bar">
+    <div class="metric-item">
+      <span class="metric-label">Total Tickets</span>
+      <span class="metric-val">{{ totalTickets }}</span>
+    </div>
+    <div class="metric-divider"></div>
+
+    <div class="metric-item">
+      <span class="metric-label">Radicados</span>
+      <span class="metric-val">{{ totalRadicados }}</span>
+    </div>
+    <div class="metric-divider"></div>
+
+    <div class="metric-item">
+      <span class="metric-label">En Atención</span>
+      <span class="metric-val">{{ totalEnAtencion }}</span>
+    </div>
+    <div class="metric-divider"></div>
+
+    <div class="metric-item">
+      <span class="metric-label">Resueltos</span>
+      <span class="metric-val metric-success">{{ totalResueltos }}</span>
+    </div>
+
+    <ng-container *ngIf="totalCriticos > 0">
+      <div class="metric-divider"></div>
+      <div class="metric-item">
+        <span class="metric-label">Críticos</span>
+        <span class="metric-val metric-danger">{{ totalCriticos }}</span>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- BARRA DE FILTROS Y BÚSQUEDA INTEGRADA -->
+  <div class="toolbar-box">
+    <!-- Buscador de texto -->
+    <div class="search-input-box">
+      <svg class="search-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" [(ngModel)]="filtroTexto" (ngModelChange)="onBusquedaChange($event)"
+        placeholder="Buscar por radicado, cliente, cédula o asunto..." class="search-field">
+    </div>
+
+    <!-- Selectores de filtrado inmediato -->
+    <div class="selectors-wrap">
+      <div class="select-group">
+        <label>Estado:</label>
+        <select [(ngModel)]="filtroEstado"
+          (change)="onEstadoSelect($event)"
+          (input)="onEstadoSelect($event)"
+          (ngModelChange)="onEstadoSelect($event)"
+          class="minimal-select">
+          <option value="TODOS">Todos</option>
+          <option value="RADICADO">Radicado</option>
+          <option value="EN_ANALISIS">En Análisis</option>
+          <option value="EN_CAMPO">En Campo</option>
+          <option value="RESUELTO">Resuelto</option>
+          <option value="CERRADO">Cerrado</option>
+        </select>
+      </div>
+
+      <div class="select-group">
+        <label>Prioridad:</label>
+        <select [(ngModel)]="filtroPrioridad"
+          (change)="onPrioridadSelect($event)"
+          (input)="onPrioridadSelect($event)"
+          (ngModelChange)="onPrioridadSelect($event)"
+          class="minimal-select">
+          <option value="TODAS">Todas</option>
+          <option value="CRITICA">Crítica</option>
+          <option value="ALTA">Alta</option>
+          <option value="MEDIA">Media</option>
+          <option value="BAJA">Baja</option>
+        </select>
+      </div>
+
+      <div class="select-group">
+        <label>Categoría:</label>
+        <select [(ngModel)]="filtroCategoria"
+          (change)="onCategoriaSelect($event)"
+          (input)="onCategoriaSelect($event)"
+          (ngModelChange)="onCategoriaSelect($event)"
+          class="minimal-select">
+          <option value="TODAS">Todas</option>
+          <option value="CALIDAD_FORRAJE">Calidad Forraje</option>
+          <option value="LOGISTICA">Logística / Entrega</option>
+          <option value="FACTURACION">Facturación</option>
+          <option value="SOPORTE_WEB">Soporte Web / App</option>
+        </select>
+      </div>
+
+      <button *ngIf="filtroTexto || filtroEstado !== 'TODOS' || filtroPrioridad !== 'TODAS' || filtroCategoria !== 'TODAS'"
+        class="btn-clear-minimal" (click)="limpiarFiltros()" title="Quitar todos los filtros">
+        Limpiar
+      </button>
+    </div>
+  </div>
+
+  <!-- ESTADO DE CARGA -->
+  <div *ngIf="cargando" class="state-notice">
+    <p>Consultando base de datos...</p>
+  </div>
+
+  <!-- ERROR -->
+  <div *ngIf="!cargando && error" class="alert-box">
+    <span>{{ error }}</span>
+    <button (click)="cargarTickets()">Reintentar</button>
+  </div>
+
+  <!-- TABLA MINIMALISTA CORPORATIVA -->
+  <div *ngIf="!cargando && !error" class="table-card-wrapper">
+    <!-- Estado vacío -->
+    <div *ngIf="ticketsFiltrados.length === 0" class="empty-state-simple">
+      <p>No se encontraron tickets con los criterios de búsqueda aplicados.</p>
+      <button *ngIf="tickets.length > 0" (click)="limpiarFiltros()" class="btn-text-link">Quitar filtros</button>
+    </div>
+
+    <!-- Tabla sobria -->
+    <table *ngIf="ticketsFiltrados.length > 0" class="minimal-table">
+      <thead>
+        <tr>
+          <th>Radicado</th>
+          <th>Cliente</th>
+          <th>Asunto / Problema</th>
+          <th>Categoría</th>
+          <th class="text-center">Factura</th>
+          <th>Prioridad</th>
+          <th>Estado</th>
+          <th>Límite SLA / Radicado</th>
+          <th class="th-acciones">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ticket of ticketsFiltrados" class="table-row-hover" (click)="abrirDetalle(ticket)">
+          <!-- Radicado: Monospace sobrio -->
+          <td class="td-radicado">
+            {{ ticket.codigoRadicado || ('TKT-' + ticket.idTicket) }}
+          </td>
+
+          <!-- Cliente: Nombre y Cédula -->
+          <td>
+            <div class="cliente-cell">
+              <span class="cliente-name">{{ getClienteNombre(ticket) }}</span>
+              <span class="cliente-doc">CC: {{ getClienteCedula(ticket) }}</span>
+            </div>
+          </td>
+
+          <!-- Asunto y breve descripción -->
+          <td class="td-asunto">
+            <span class="asunto-title">{{ ticket.tituloTicket }}</span>
+            <span class="asunto-desc">{{ ticket.descripcionTicket }}</span>
+          </td>
+
+          <!-- Categoría: Texto plano -->
+          <td class="td-muted">
+            {{ getCategoriaLabel(ticket.categoriaTicket) }}
+          </td>
+
+          <!-- Factura -->
+          <td class="td-muted text-center">
+            {{ getFacturaId(ticket) }}
+          </td>
+
+          <!-- Prioridad: Punto minimalista + texto -->
+          <td>
+            <span class="prio-tag" [ngClass]="getPrioridadClass(ticket.prioridad)">
+              <span class="dot"></span>
+              {{ ticket.prioridad || 'MEDIA' }}
+            </span>
+          </td>
+
+          <!-- Estado: Etiqueta sutil -->
+          <td>
+            <span class="status-badge" [ngClass]="getEstadoClass(ticket.estadoTicket)">
+              {{ ticket.estadoTicket || 'RADICADO' }}
+            </span>
+          </td>
+
+          <!-- Límite SLA / Radicado -->
+          <td class="td-fechas">
+            <span *ngIf="ticket.fechaLimite" class="fecha-limite-principal"
+              [class.sla-danger]="esSlaVencido(ticket)"
+              [class.sla-warning]="!esSlaVencido(ticket) && esSlaUrgente(ticket)">
+              {{ ticket.fechaLimite | date:'dd/MM/yyyy hh:mm a' }}
+              <span *ngIf="esSlaVencido(ticket)" class="sla-mini-tag danger">¡Vencido!</span>
+              <span *ngIf="!esSlaVencido(ticket) && esSlaUrgente(ticket)" class="sla-mini-tag warning">Próximo</span>
+            </span>
+            <span *ngIf="!ticket.fechaLimite" class="fecha-limite-principal text-muted">
+              Sin límite
+            </span>
+            <span class="fecha-rad-sub">
+              Radicado: {{ ticket.fechaInicio | date:'dd/MM/yyyy' }}
+            </span>
+          </td>
+
+          <!-- Acción: Ver detalle (dorado) y Asignar Asesor (verde) -->
+          <td class="text-right td-acciones" (click)="$event.stopPropagation()">
+            <div class="action-buttons-wrap">
+              <button class="btn-action-gold" (click)="abrirDetalle(ticket)" title="Ver información del ticket">
+                Ver detalle
+              </button>
+              <button class="btn-action-green"
+                [disabled]="tieneAsesorAsignado(ticket)"
+                (click)="abrirModalAsignar(ticket, $event)"
+                [title]="tieneAsesorAsignado(ticket) ? 'Este ticket ya tiene un asesor asignado (' + getTecnicoNombre(ticket) + ')' : 'Asignar asesor técnico al ticket'">
+                <svg *ngIf="!tieneAsesorAsignado(ticket)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="8.5" cy="7" r="4"></circle>
+                  <line x1="20" y1="8" x2="20" y2="14"></line>
+                  <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
+                <svg *ngIf="tieneAsesorAsignado(ticket)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                {{ tieneAsesorAsignado(ticket) ? 'Asignado' : 'Asignar' }}
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL DE DETALLE MINIMALISTA -->
+<div class="modal-backdrop" *ngIf="mostrarModalDetalle && ticketSeleccionado" (click)="cerrarModalDetalle()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <!-- Header del modal -->
+    <div class="modal-card-header">
+      <div>
+        <span class="modal-rad-label">{{ ticketSeleccionado.codigoRadicado || ('TKT-' + ticketSeleccionado.idTicket) }}</span>
+        <h2>{{ ticketSeleccionado.tituloTicket }}</h2>
+      </div>
+      <button class="modal-btn-close" (click)="cerrarModalDetalle()" title="Cerrar">×</button>
+    </div>
+
+    <div class="modal-card-body">
+      <!-- Fila de metadatos simples -->
+      <div class="modal-metadata-row">
+        <div class="meta-block">
+          <span class="meta-label">Estado</span>
+          <span class="status-badge" [ngClass]="getEstadoClass(ticketSeleccionado.estadoTicket)">
+            {{ ticketSeleccionado.estadoTicket || 'RADICADO' }}
+          </span>
+        </div>
+        <div class="meta-block">
+          <span class="meta-label">Prioridad</span>
+          <span class="prio-tag" [ngClass]="getPrioridadClass(ticketSeleccionado.prioridad)">
+            <span class="dot"></span>
+            {{ ticketSeleccionado.prioridad || 'MEDIA' }}
+          </span>
+        </div>
+        <div class="meta-block">
+          <span class="meta-label">Categoría</span>
+          <span class="meta-value">{{ getCategoriaLabel(ticketSeleccionado.categoriaTicket) }}</span>
+        </div>
+        <div class="meta-block">
+          <span class="meta-label">Factura</span>
+          <span class="meta-value">{{ getFacturaId(ticketSeleccionado) }}</span>
+        </div>
+      </div>
+
+      <!-- Información del cliente -->
+      <div class="modal-group">
+        <h3>Datos del Cliente</h3>
+        <div class="info-columns">
+          <div><strong>Nombre:</strong> {{ getClienteNombre(ticketSeleccionado) }}</div>
+          <div><strong>Cédula:</strong> {{ getClienteCedula(ticketSeleccionado) }}</div>
+          <div *ngIf="getClienteTelefono(ticketSeleccionado)"><strong>Teléfono:</strong> {{ getClienteTelefono(ticketSeleccionado) }}</div>
+          <div *ngIf="getClienteCorreo(ticketSeleccionado)"><strong>Correo:</strong> {{ getClienteCorreo(ticketSeleccionado) }}</div>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div class="modal-group">
+        <h3>Descripción del Caso</h3>
+        <p class="description-text">{{ ticketSeleccionado.descripcionTicket }}</p>
+      </div>
+
+      <!-- Evidencia si existe -->
+      <div class="modal-group" *ngIf="ticketSeleccionado.evidenciaImg">
+        <h3>Evidencia Gráfica</h3>
+        <a [href]="ticketSeleccionado.evidenciaImg" target="_blank" rel="noopener noreferrer">
+          <img [src]="ticketSeleccionado.evidenciaImg" alt="Evidencia" class="evidence-thumb">
+        </a>
+      </div>
+
+      <!-- Asesor Asignado -->
+      <div class="modal-group">
+        <h3>Asesor Técnico Responsable</h3>
+        <div class="info-columns">
+          <div><strong>Asesor:</strong> {{ getTecnicoNombre(ticketSeleccionado) }}</div>
+        </div>
+      </div>
+
+      <!-- Tiempos de atención -->
+      <div class="modal-group">
+        <h3>Fechas y Plazos</h3>
+        <div class="info-columns text-sm">
+          <div><strong>Radicado:</strong> {{ ticketSeleccionado.fechaInicio | date:'dd/MM/yyyy hh:mm a' }}</div>
+          <div *ngIf="ticketSeleccionado.fechaLimite"><strong>Límite SLA:</strong> {{ ticketSeleccionado.fechaLimite | date:'dd/MM/yyyy hh:mm a' }}</div>
+          <div *ngIf="ticketSeleccionado.fechaFin"><strong>Resuelto:</strong> {{ ticketSeleccionado.fechaFin | date:'dd/MM/yyyy hh:mm a' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-card-footer">
+      <button class="btn-close-modal" (click)="cerrarModalDetalle()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- POP UP / MODAL DE ASIGNACIÓN DE ASESOR TÉCNICO -->
+<div class="modal-backdrop" *ngIf="mostrarModalAsignar && ticketParaAsignar" (click)="cerrarModalAsignar()">
+  <div class="modal-card modal-card-asignar" (click)="$event.stopPropagation()">
+    <!-- Header del modal -->
+    <div class="modal-card-header">
+      <div>
+        <span class="modal-tag">Gestión de Personal</span>
+        <h2>Asignar Asesor Técnico</h2>
+        <p class="modal-sub">
+          Radicado <strong>{{ ticketParaAsignar.codigoRadicado || ('#' + ticketParaAsignar.idTicket) }}</strong> — {{ ticketParaAsignar.tituloTicket }}
+        </p>
+      </div>
+      <button class="btn-close-modal" (click)="cerrarModalAsignar()" title="Cerrar ventana">✕</button>
+    </div>
+
+    <!-- Contenido del modal -->
+    <div class="modal-card-body">
+      <!-- Mensaje de éxito tras asignar -->
+      <div *ngIf="mensajeExitoAsignacion" class="alert-banner-success">
+        <span class="alert-icon">✓</span>
+        <div>{{ mensajeExitoAsignacion }}</div>
+      </div>
+
+      <!-- Mensaje de error si falla -->
+      <div *ngIf="errorAsignacion" class="alert-banner-error">
+        <span class="alert-icon">⚠</span>
+        <div>{{ errorAsignacion }}</div>
+      </div>
+
+      <!-- Resumen rápido del ticket -->
+      <div class="resumen-ticket-box">
+        <div class="resumen-item">
+          <span class="resumen-lbl">Cliente:</span>
+          <span class="resumen-val">{{ getClienteNombre(ticketParaAsignar) }}</span>
+        </div>
+        <div class="resumen-item">
+          <span class="resumen-lbl">Categoría:</span>
+          <span class="resumen-val">{{ getCategoriaLabel(ticketParaAsignar.categoriaTicket) }}</span>
+        </div>
+        <div class="resumen-item">
+          <span class="resumen-lbl">Asesor actual:</span>
+          <span class="resumen-val" [class.resumen-assigned]="ticketParaAsignar.tecnicoAsignado">
+            {{ getTecnicoNombre(ticketParaAsignar) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Selección de Asesor -->
+      <div class="asesores-container">
+        <div class="asesores-header-row">
+          <label class="asesores-title">Selecciona el asesor responsable:</label>
+        </div>
+
+        <!-- Indicador de carga -->
+        <div *ngIf="cargandoAsesores" class="loading-asesores">
+          <div class="mini-spinner"></div>
+          <span>Consultando lista de asesores...</span>
+        </div>
+
+        <!-- Estado si no hay asesores -->
+        <div *ngIf="!cargandoAsesores && asesores.length === 0" class="empty-asesores">
+          <p>No se encontraron usuarios con el rol <strong>ASESOR</strong> en el sistema.</p>
+        </div>
+
+        <!-- Listado de asesores -->
+        <div *ngIf="!cargandoAsesores && asesores.length > 0" class="asesores-grid">
+          <div *ngFor="let asesor of asesores"
+            class="asesor-card"
+            [class.asesor-selected]="asesorSeleccionadoCedula === asesor.cedulaU"
+            (click)="seleccionarAsesor(asesor.cedulaU)">
+            <div class="asesor-avatar">
+              {{ (asesor.nombre ? asesor.nombre.charAt(0) : 'U').toUpperCase() }}
+            </div>
+            <div class="asesor-details">
+              <span class="asesor-nombre">{{ asesor.nombre }}</span>
+              <span class="asesor-cedula">C.C. {{ asesor.cedulaU }}</span>
+            </div>
+            <span class="asesor-rol-badge">{{ asesor.rol || 'ASESOR' }}</span>
+            <div class="asesor-radio-dot" [class.active]="asesorSeleccionadoCedula === asesor.cedulaU"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer del modal asignación -->
+    <div class="modal-card-footer modal-footer-centered">
+      <button class="btn-confirm-assign"
+        (click)="confirmarAsignacion()"
+        [disabled]="!asesorSeleccionadoCedula || guardandoAsignacion">
+        {{ guardandoAsignacion ? 'Asignando y Notificando...' : 'Asignar Asesor' }}
+      </button>
+    </div>
+  </div>
+</div>

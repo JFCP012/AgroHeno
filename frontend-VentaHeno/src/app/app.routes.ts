@@ -14,6 +14,10 @@ import { CrearCliente } from './pages/crear-cliente/crear-cliente';
 import { ReportesClienteComponent } from './pages/reportes-cliente/reportes-cliente.component';
 import { PerfilCliente } from './pages/perfil-cliente/perfil-cliente';
 import { CrearTicketComponent } from './pages/crearTicket/crearTicket';
+import { GestionTicketsComponent } from './pages/gestion-tickets/gestion-tickets.component';
+import { gestorTicketsGuard } from './guards/gestor-tickets.guard';
+import { AsesorTicketsComponent } from './pages/asesor-tickets/asesor-tickets.component';
+import { asesorTicketsGuard } from './guards/asesor-tickets.guard';
 
 export const routes: Routes = [
     { path: '', component: ProductoComponent },
@@ -27,6 +31,8 @@ export const routes: Routes = [
     { path: 'crearTicket', component: CrearTicketComponent },
     { path: 'crear-ticket', component: CrearTicketComponent },
     { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
+    { path: 'gestion-tickets', component: GestionTicketsComponent, canActivate: [gestorTicketsGuard] },
+    { path: 'asesor-tickets', component: AsesorTicketsComponent, canActivate: [asesorTicketsGuard] },
     { path: 'reportes-mes', component: ReportesMesComponent, canActivate: [adminGuard] },
     { path: 'reportes-animal', component: ReportesAnimalComponent, canActivate: [adminGuard] },
     { path: 'reportes-paca', component: ReportesPacaComponent, canActivate: [adminGuard] },
