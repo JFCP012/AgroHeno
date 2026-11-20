@@ -31,6 +31,13 @@ public class Usuario {
 
     @Column(name = "rol", nullable = true)
     @Builder.Default
-    private String rol = "ADMIN";
+    private String rol = "admin";
 
+    @Column(name = "activo", nullable = true)
+    @Builder.Default
+    private Boolean activo = true;
+
+    public Boolean getActivo() {
+        return activo == null ? true : activo;
+    }
 }

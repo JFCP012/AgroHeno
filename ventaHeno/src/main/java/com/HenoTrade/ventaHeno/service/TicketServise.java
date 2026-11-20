@@ -309,6 +309,10 @@ public class TicketServise {
         Usuario tecnico = this.usuarioRepositorio.findById(cedulaTecnico)
                 .orElseThrow(() -> new RuntimeException("Técnico no encontrado con cédula: " + cedulaTecnico));
 
+        if (tecnico.getActivo() != null && !tecnico.getActivo()) {
+            throw new IllegalStateException("El asesor seleccionado (" + tecnico.getNombre() + ") se encuentra inactivo y no puede ser asignado.");
+        }
+
         ticket.setTecnicoAsignado(tecnico);
         ticket.setEstadoTicket("EN_ANALISIS");
         Ticket ticketGuardado = this.ticketRepositorio.save(ticket);

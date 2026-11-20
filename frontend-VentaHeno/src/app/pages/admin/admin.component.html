@@ -1,7 +1,7 @@
 <header class="admin-top-header">
   <div class="admin-header-inner">
-    <!-- Left: back to store -->
-    <div class="admin-header-left">
+    <!-- Left: back to store & logout -->
+    <div class="admin-header-left" style="display: flex; gap: 0.75rem; align-items: center;">
       <button class="btn-admin-logout" (click)="cerrarSesion()">Cerrar Sesión 🔓</button>
     </div>
     <!-- Center: Logo -->
@@ -38,15 +38,15 @@
       </div>
     </div>
 
-    <!-- Tarjeta: Gestión y Creación de Usuarios Internos -->
+    <!-- Tarjeta: Creación de Usuarios -->
     <div class="dashboard-card highlight">
-      <div class="card-icon"><img src="assets/Imagenes/Clientes.png" alt="Icono Usuarios" class="card-img-icon">
+      <div class="card-icon"><img src="assets/Imagenes/CrearUsuario.png" alt="Icono Creación de Usuarios" class="card-img-icon">
       </div>
       <div class="card-content">
-        <h2>Usuarios Internos</h2>
-        <p>Alta y gestión de cuentas para el personal: Administradores, Asesores y Gestores de Tickets.</p>
+        <h2>Creación de Usuarios</h2>
+        <p>Registra y administra nuevas cuentas de acceso para el personal: Administradores, Asesores y Gestores de Tickets.</p>
         <button class="btn-dashboard-action" (click)="irAGestionUsuarios()">
-          <span>Gestionar Usuarios</span>
+          <span>Crear Usuarios</span>
         </button>
       </div>
     </div>
@@ -104,7 +104,7 @@
 
     <!-- Tarjeta 5: Gestión de Tickets -->
     <div class="dashboard-card highlight">
-      <div class="card-icon"><img src="assets/Imagenes/Logo2.png" alt="Icono" class="card-img-icon">
+      <div class="card-icon"><img src="assets/Imagenes/GestionarTickets.png" alt="Icono Gestión de Tickets" class="card-img-icon">
       </div>
       <div class="card-content">
         <h2>Gestión de Tickets</h2>

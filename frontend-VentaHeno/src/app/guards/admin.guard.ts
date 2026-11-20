@@ -6,11 +6,12 @@ export const adminGuard: CanActivateFn = (route, state) => {
   const adminService = inject(AdminService);
   const router = inject(Router);
 
-  if (adminService.isAdminLoggedIn()) {
+  const usuario = adminService.getUsuario();
+  if (adminService.isAdminLoggedIn() && (!usuario || usuario.activo !== false)) {
     return true;
   }
 
-  // Si no está logueado como administrador, redirigir a la tienda
+  adminService.logoutAdmin();
   router.navigate(['/producto']);
   return false;
 };

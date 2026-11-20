@@ -1,12 +1,13 @@
 <!-- HEADER SUPERIOR INSTITUCIONAL AGROHENO -->
 <header class="admin-top-header">
   <div class="admin-header-inner">
-    <!-- Left: Cerrar sesión -->
-    <div class="admin-header-left">
+    <!-- Left: Volver al Panel (solo si entra desde admin) y Cerrar sesión -->
+    <div class="admin-header-left" style="display: flex; gap: 0.75rem; align-items: center;">
+      <button class="btn-admin-back" *ngIf="esAdmin" (click)="volverAlPanel()">← Volver al Panel</button>
       <button class="btn-admin-logout" (click)="cerrarSesion()">Cerrar Sesión 🔓</button>
     </div>
     <!-- Center: Logotipo oficial -->
-    <div class="admin-header-branding">
+    <div class="admin-header-branding" (click)="esAdmin ? volverAlPanel() : null" [style.cursor]="esAdmin ? 'pointer' : 'default'">
       <img src="assets/Imagenes/Logo2.png" alt="AgroHeno Logo" class="admin-header-logo">
       <div class="admin-brand-text">
         <span class="brand-main">AgroHeno</span>
@@ -15,7 +16,7 @@
     </div>
     <!-- Right: Badge -->
     <div class="admin-header-right">
-      <span class="admin-header-badge">Gestor Tickets 📋</span>
+      <span class="admin-header-badge">{{ esAdmin ? 'Administrador 🔒' : 'Gestor Tickets 📋' }}</span>
     </div>
   </div>
 </header>
@@ -27,9 +28,14 @@
       <h1>Gestión de Tickets</h1>
       <p>Supervisión, atención técnica y resolución de requerimientos de soporte</p>
     </div>
-    <button class="btn-refresh-simple" (click)="cargarTickets()" [disabled]="cargando" title="Actualizar listado">
-      {{ cargando ? 'Consultando...' : 'Actualizar' }}
-    </button>
+    <div class="page-title-actions">
+      <button class="btn-faq-redirect" (click)="irAPreguntasFrecuentes()" title="Gestionar Base de Conocimiento y Preguntas Frecuentes">
+        <span>+ Preguntas Frecuentes</span>
+      </button>
+      <button class="btn-refresh-simple" (click)="cargarTickets()" [disabled]="cargando" title="Actualizar listado">
+        {{ cargando ? 'Consultando...' : 'Actualizar' }}
+      </button>
+    </div>
   </div>
 
   <!-- BARRA DE MÉTRICAS MINIMALISTA (Unificada, sobria, sin burbujas) -->

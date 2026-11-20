@@ -395,10 +395,14 @@ export class PerfilCliente implements OnInit {
   irACrearTicket(idFactura?: number, tipoHeno?: string) {
     const queryParams: any = {};
     if (idFactura) queryParams.idFactura = idFactura;
-    if (tipoHeno) queryParams.heno = tipoHeno;
+    if (tipoHeno) {
+      queryParams.heno = tipoHeno;
+      queryParams.tipoHeno = tipoHeno;
+    }
     if (this.cliente?.cedula) queryParams.cedula = this.cliente.cedula;
 
-    this.router.navigate(['/crearTicket'], { queryParams });
+    // Redirige primero a la sección de preguntas frecuentes con los datos precargados
+    this.router.navigate(['/preguntas-frecuentes'], { queryParams });
   }
 
   cerrarSesion() {

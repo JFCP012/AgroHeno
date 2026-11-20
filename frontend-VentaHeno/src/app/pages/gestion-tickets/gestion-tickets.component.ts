@@ -418,9 +418,21 @@ export class GestionTicketsComponent implements OnInit {
     return 'Asignado';
   }
 
+  get esAdmin(): boolean {
+    return this.adminService.isAdminLoggedIn();
+  }
+
+  volverAlPanel(): void {
+    this.router.navigate(['/admin']);
+  }
+
   cerrarSesion(): void {
     this.adminService.logoutAdmin();
     this.router.navigate(['/producto']);
+  }
+
+  irAPreguntasFrecuentes(): void {
+    this.router.navigate(['/gestion-preguntas-frecuentes']);
   }
 
   // Clases CSS dinámicas para badges

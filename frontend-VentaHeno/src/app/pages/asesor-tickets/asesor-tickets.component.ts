@@ -47,6 +47,14 @@ export class AsesorTicketsComponent implements OnInit {
   mensajeExitoResolucion: string | null = null;
   errorResolucion: string | null = null;
 
+  get esAdmin(): boolean {
+    return this.adminService.isAdminLoggedIn();
+  }
+
+  volverAlPanel(): void {
+    this.router.navigate(['/admin']);
+  }
+
   ngOnInit(): void {
     this.asesorActual = this.adminService.getUsuario();
     if (this.asesorActual && this.asesorActual.cedulaU) {

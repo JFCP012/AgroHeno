@@ -1,0 +1,161 @@
+<header class="admin-top-header">
+  <div class="admin-header-inner">
+    <div class="admin-header-left">
+      <button class="btn-admin-back" (click)="volver()">← Volver a Tickets</button>
+    </div>
+    <div class="admin-header-branding" (click)="volver()" style="cursor: pointer;">
+      <img src="assets/Imagenes/Logo2.png" alt="AgroHeno Logo" class="admin-header-logo">
+      <div class="admin-brand-text">
+        <span class="brand-main">AgroHeno</span>
+        <span class="brand-sub">PREGUNTAS FRECUENTES</span>
+      </div>
+    </div>
+    <div class="admin-header-right">
+      <span class="admin-header-badge">{{ esAdmin ? 'Administrador 🔒' : 'Gestor Tickets 📋' }}</span>
+    </div>
+  </div>
+</header>
+
+<div class="gestion-container">
+  <!-- Bar under header with Title and Create button (Idéntica a Foto 1) -->
+  <div class="action-bar">
+    <div class="bar-left">
+      <h2>Gestión de Preguntas Frecuentes</h2>
+    </div>
+    <div class="bar-right">
+      <button (click)="abrirCrear()" class="btn-crear">
+        <span>Crear Nueva Pregunta</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Barra de Filtros Sobria -->
+  <div class="filter-bar">
+    <div class="filter-item">
+      <label>Categoría:</label>
+      <select [(ngModel)]="categoriaSeleccionada" (change)="filtrarPorCategoria(categoriaSeleccionada)" class="filter-select">
+        <option value="TODAS">Todas</option>
+        <option *ngFor="let cat of categoriasDisponibles" [value]="cat.id">
+          {{ cat.nombre }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Mensajes de Estado -->
+  <div *ngIf="errorMsg" class="alert alert-error">
+    {{ errorMsg }}
+  </div>
+
+  <div *ngIf="successMsg" class="alert alert-success">
+    {{ successMsg }}
+  </div>
+
+  <div *ngIf="cargando" class="loading-state">
+    <p>Cargando preguntas frecuentes...</p>
+  </div>
+
+  <div *ngIf="!cargando && preguntasFiltradas.length === 0" class="empty-state">
+    <p>No hay preguntas frecuentes registradas.</p>
+    <button (click)="abrirCrear()" class="btn-primary">Añadir Primera Pregunta</button>
+  </div>
+
+  <!-- Horizontal List Items (Exacto a la foto) -->
+  <div *ngIf="!cargando && preguntasFiltradas.length > 0" class="gestion-items">
+    <div class="gestion-item" *ngFor="let p of preguntasFiltradas" [class.inactive-item]="!p.activo">
+
+      <!-- Item Info (Sin caja de FAQ #1) -->
+      <div class="item-details">
+        <div class="title-row">
+          <h3>{{ p.pregunta }}</h3>
+          <span class="badge-status" [class.status-activo]="p.activo" [class.status-inactivo]="!p.activo">
+            {{ p.activo ? 'ACTIVO' : 'INACTIVO' }}
+          </span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-price">{{ getNombreCategoria(p.categoria) }}</span>
+          <span class="info-divider">|</span>
+          <span class="info-stock">Orden: {{ p.orden }}</span>
+        </div>
+
+        <p class="info-answer" [title]="p.respuesta">
+          {{ p.respuesta.length > 150 ? (p.respuesta | slice:0:150) + '...' : p.respuesta }}
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="item-actions">
+        <button class="btn-action btn-edit" (click)="abrirEditar(p.idPregunta!)">
+          Editar
+        </button>
+        <button *ngIf="p.activo" class="btn-action btn-deactivate" (click)="desactivar(p)">
+          Desactivar
+        </button>
+        <button *ngIf="!p.activo" class="btn-action btn-activate" (click)="desactivar(p)">
+          Activar
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal Formulario Limpio (Mismo estilo que crear-producto) -->
+<div *ngIf="mostrarModalForm" class="modal-backdrop" (click)="cerrarModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ esModoEdicion ? 'Editar Pregunta Frecuente' : 'Crear Nueva Pregunta Frecuente' }}</h2>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <form (ngSubmit)="guardarPregunta()" class="modal-form">
+      <div *ngIf="modalErrorMsg" class="alert alert-error" style="margin-bottom: 1rem;">
+        {{ modalErrorMsg }}
+      </div>
+
+      <div class="form-group">
+        <label for="pregunta">Pregunta</label>
+        <input type="text" id="pregunta" name="pregunta" [(ngModel)]="preguntaForm.pregunta" required
+          placeholder="Ej. ¿Qué debo hacer si una paca presenta exceso de humedad?" class="form-input" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="categoria">Categoría</label>
+          <select id="categoria" name="categoria" [(ngModel)]="preguntaForm.categoria" class="form-input">
+            <option *ngFor="let cat of categoriasDisponibles" [value]="cat.id">
+              {{ cat.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="orden">Orden de Posición</label>
+          <input type="number" id="orden" name="orden" [(ngModel)]="preguntaForm.orden" min="1" class="form-input" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="respuesta">Respuesta</label>
+        <textarea id="respuesta" name="respuesta" [(ngModel)]="preguntaForm.respuesta" required rows="5"
+          placeholder="Escriba la solución detallada que se le mostrará al cliente..." class="form-input form-textarea"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="estado">Estado</label>
+        <select id="estado" name="estado" [(ngModel)]="preguntaForm.activo" class="form-input">
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : (esModoEdicion ? 'Guardar Cambios' : 'Crear Pregunta') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

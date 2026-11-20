@@ -19,6 +19,8 @@ import { gestorTicketsGuard } from './guards/gestor-tickets.guard';
 import { AsesorTicketsComponent } from './pages/asesor-tickets/asesor-tickets.component';
 import { asesorTicketsGuard } from './guards/asesor-tickets.guard';
 import { CrearUsuarioAdminComponent } from './pages/crear-usuario-admin/crear-usuario-admin.component';
+import { GestionPreguntasFrecuentesComponent } from './pages/gestion-preguntas-frecuentes/gestion-preguntas-frecuentes.component';
+import { PreguntasFrecuentesComponent } from './pages/preguntas-frecuentes/preguntas-frecuentes.component';
 
 export const routes: Routes = [
     { path: '', component: ProductoComponent },
@@ -35,6 +37,9 @@ export const routes: Routes = [
     { path: 'crear-usuario-admin', component: CrearUsuarioAdminComponent, canActivate: [adminGuard] },
     { path: 'gestion-usuarios', component: CrearUsuarioAdminComponent, canActivate: [adminGuard] },
     { path: 'gestion-tickets', component: GestionTicketsComponent, canActivate: [gestorTicketsGuard] },
+    { path: 'gestion-preguntas-frecuentes', component: GestionPreguntasFrecuentesComponent, canActivate: [gestorTicketsGuard] },
+    { path: 'preguntas-frecuentes', component: PreguntasFrecuentesComponent },
+    { path: 'ayuda', component: PreguntasFrecuentesComponent },
     { path: 'asesor-tickets', component: AsesorTicketsComponent, canActivate: [asesorTicketsGuard] },
     { path: 'reportes-mes', component: ReportesMesComponent, canActivate: [adminGuard] },
     { path: 'reportes-animal', component: ReportesAnimalComponent, canActivate: [adminGuard] },
