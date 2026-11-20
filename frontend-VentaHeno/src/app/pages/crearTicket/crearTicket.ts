@@ -88,16 +88,17 @@ export class CrearTicketComponent implements OnInit {
       this.idFacturaInput = Number(paramFactura);
     }
 
-    const paramHeno = this.route.snapshot.queryParamMap.get('heno');
+    const paramHeno = this.route.snapshot.queryParamMap.get('heno') || this.route.snapshot.queryParamMap.get('tipoHeno');
     if (paramHeno && paramFactura) {
       this.ticket.tituloTicket = `Inconveniente con ${paramHeno} (Factura #${paramFactura})`;
       this.ticket.descripcionTicket = `Reporto un inconveniente con el producto ${paramHeno} adquirido en la Factura #${paramFactura}: `;
       this.ticket.categoriaTicket = 'CALIDAD_FORRAJE';
     } else if (paramFactura) {
       this.ticket.tituloTicket = `Inconveniente con Factura #${paramFactura}`;
+      this.ticket.descripcionTicket = `Reporto un inconveniente con el pedido de la Factura #${paramFactura}: `;
     }
 
-    const paramCedula = this.route.snapshot.queryParamMap.get('cedula');
+    const paramCedula = this.route.snapshot.queryParamMap.get('cedula') || this.route.snapshot.queryParamMap.get('cedulaU');
     if (paramCedula && !this.cedulaClienteInput) {
       this.cedulaClienteInput = paramCedula;
     }

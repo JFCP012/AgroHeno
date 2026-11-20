@@ -6,11 +6,12 @@ export const asesorTicketsGuard: CanActivateFn = (route, state) => {
   const adminService = inject(AdminService);
   const router = inject(Router);
 
-  if (adminService.isAsesorLoggedIn()) {
+  const usuario = adminService.getUsuario();
+  if (adminService.isAsesorLoggedIn() && (!usuario || usuario.activo !== false)) {
     return true;
   }
 
-  // Si no está autenticado como asesor o admin, redirigir a la tienda
+  adminService.logoutAdmin();
   router.navigate(['/producto']);
   return false;
 };

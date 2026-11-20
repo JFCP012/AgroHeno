@@ -30,6 +30,34 @@
   margin: 0;
 }
 
+.page-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-faq-redirect {
+  background: #cca243;
+  color: #ffffff;
+  border: 1px solid #b38d36;
+  padding: 0.55rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(204, 162, 67, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-faq-redirect:hover {
+  background: #b38d36;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(204, 162, 67, 0.35);
+}
+
 .btn-refresh-simple {
   background: #ffffff;
   color: #351903;

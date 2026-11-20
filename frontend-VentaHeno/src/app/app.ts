@@ -61,12 +61,17 @@ export class App implements OnInit {
   }
 
   private actualizarEstadoExclusion(url: string) {
-    this.esRutaExcluida = url.includes('/admin') ||
-      url.includes('/crear-producto') ||
-      url.includes('reportes') ||
-      url.includes('/gestion-henos') ||
-      url.includes('/gestion-tickets') ||
-      url.includes('/asesor-tickets');
+    const current = (url || (typeof window !== 'undefined' ? window.location.pathname : '') || '').toLowerCase();
+    this.esRutaExcluida = current.includes('admin') ||
+      current.includes('usuario') ||
+      current.includes('crear-producto') ||
+      current.includes('reportes') ||
+      current.includes('gestion-henos') ||
+      current.includes('gestion-tickets') ||
+      current.includes('asesor-tickets') ||
+      current.includes('gestion-preguntas-frecuentes') ||
+      current.includes('preguntas-frecuentes') ||
+      current.includes('ayuda');
   }
 
   get cantidadEnCarrito() {

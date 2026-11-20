@@ -1,12 +1,13 @@
 <!-- HEADER SUPERIOR INSTITUCIONAL AGROHENO -->
 <header class="admin-top-header">
   <div class="admin-header-inner">
-    <!-- Left: Cerrar sesión -->
-    <div class="admin-header-left">
+    <!-- Left: Volver al Panel (solo si entra desde admin) y Cerrar sesión -->
+    <div class="admin-header-left" style="display: flex; gap: 0.75rem; align-items: center;">
+      <button class="btn-admin-back" *ngIf="esAdmin" (click)="volverAlPanel()">← Volver al Panel</button>
       <button class="btn-admin-logout" (click)="cerrarSesion()">Cerrar Sesión 🔓</button>
     </div>
     <!-- Center: Logotipo oficial -->
-    <div class="admin-header-branding">
+    <div class="admin-header-branding" (click)="esAdmin ? volverAlPanel() : null" [style.cursor]="esAdmin ? 'pointer' : 'default'">
       <img src="assets/Imagenes/Logo2.png" alt="AgroHeno Logo" class="admin-header-logo">
       <div class="admin-brand-text">
         <span class="brand-main">AgroHeno</span>
@@ -16,7 +17,7 @@
     <!-- Right: Badge Asesor -->
     <div class="admin-header-right">
       <span class="admin-header-badge">
-        Asesor: {{ asesorActual?.nombre || 'Técnico' }} 🎧
+        {{ esAdmin ? 'Administrador 🔒' : ('Asesor: ' + (asesorActual?.nombre || 'Técnico') + ' 🎧') }}
       </span>
     </div>
   </div>

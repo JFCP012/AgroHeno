@@ -7,6 +7,7 @@ export interface Usuario {
   cedulaU: number;
   nombre: string;
   rol: string;
+  activo?: boolean;
 }
 
 export interface NuevoUsuario {
@@ -14,6 +15,7 @@ export interface NuevoUsuario {
   nombre: string;
   clave: string;
   rol: string;
+  activo?: boolean;
 }
 
 @Injectable({
@@ -26,41 +28,46 @@ export class AdminService {
   constructor(private http: HttpClient) { }
 
   loginAdmin(cedulaU: number, clave: string): Observable<any> {
+    this.logoutAdmin();
     return this.http.get<any>(`${this.apiUrl}/login?cedulaU=${cedulaU}&clave=${encodeURIComponent(clave)}`)
       .pipe(
         tap(response => {
           if (response && typeof response === 'object') {
+            if (response.activo === false) {
+              this.logoutAdmin();
+              throw new Error('El usuario se encuentra inactivo. Comuníquese con el administrador.');
+            }
             sessionStorage.setItem('usuario', JSON.stringify(response));
-            const rol = (response.rol || 'ADMIN').toUpperCase();
+            const rawRol = (response.rol || 'admin').trim().toLowerCase();
+            const rol = rawRol.includes('admin') ? 'admin' : (rawRol.includes('asesor') ? 'asesor' : 'gestorTickets');
             sessionStorage.setItem('rol', rol);
-            sessionStorage.setItem('isAdmin', rol === 'ADMIN' ? 'true' : 'false');
-          } else if (response === true) {
-            sessionStorage.setItem('isAdmin', 'true');
-            sessionStorage.setItem('rol', 'ADMIN');
+            sessionStorage.setItem('isAdmin', rol === 'admin' ? 'true' : 'false');
           } else {
-            sessionStorage.removeItem('isAdmin');
-            sessionStorage.removeItem('rol');
-            sessionStorage.removeItem('usuario');
+            this.logoutAdmin();
           }
         })
       );
   }
 
   isAdminLoggedIn(): boolean {
-    const rol = sessionStorage.getItem('rol');
-    return rol === 'ADMIN' || (sessionStorage.getItem('isAdmin') === 'true' && !rol);
+    const usuario = this.getUsuario();
+    if (usuario && usuario.activo === false) return false;
+    const rol = (sessionStorage.getItem('rol') || '').toLowerCase();
+    return rol === 'admin' || (sessionStorage.getItem('isAdmin') === 'true' && !rol);
   }
 
   isGestorTicketsLoggedIn(): boolean {
-    const rawRol = (sessionStorage.getItem('rol') || '').toUpperCase().trim();
-    const cleanRol = rawRol.replace(/[^A-Z]/g, '');
-    return cleanRol === 'GESTORTICKETS' || cleanRol === 'GESTOR' || cleanRol.includes('TICKET') || rawRol === 'ADMIN';
+    const usuario = this.getUsuario();
+    if (usuario && usuario.activo === false) return false;
+    const rol = (sessionStorage.getItem('rol') || '').toLowerCase();
+    return rol === 'gestortickets' || rol === 'admin';
   }
 
   isAsesorLoggedIn(): boolean {
-    const rawRol = (sessionStorage.getItem('rol') || '').toUpperCase().trim();
-    const cleanRol = rawRol.replace(/[^A-Z]/g, '');
-    return cleanRol === 'ASESOR' || cleanRol.includes('ASESOR') || cleanRol.includes('TECNICO') || rawRol === 'ADMIN';
+    const usuario = this.getUsuario();
+    if (usuario && usuario.activo === false) return false;
+    const rol = (sessionStorage.getItem('rol') || '').toLowerCase();
+    return rol === 'asesor' || rol === 'admin';
   }
 
   getRol(): string | null {
@@ -84,5 +91,21 @@ export class AdminService {
 
   listarUsuarios(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(`${this.apiUrl}/listarUsuarios`);
+  }
+
+  editarUsuario(cedulaU: number, usuario: Partial<Usuario & { clave?: string }>): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.apiUrl}/editar/${cedulaU}`, usuario);
+  }
+
+  cambiarEstadoUsuario(cedulaU: number): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.apiUrl}/desactivar/${cedulaU}`, {});
+  }
+
+  desactivarUsuario(cedulaU: number): Observable<Usuario> {
+    return this.cambiarEstadoUsuario(cedulaU);
+  }
+
+  activarUsuario(cedulaU: number): Observable<Usuario> {
+    return this.cambiarEstadoUsuario(cedulaU);
   }
 }

@@ -214,7 +214,7 @@
                         class="btn-radicar-factura" 
                         [disabled]="tieneTicketFactura(f.idFactura)"
                         [class.btn-ticket-disabled]="tieneTicketFactura(f.idFactura)"
-                        (click)="!tieneTicketFactura(f.idFactura) && irACrearTicket(f.idFactura)" 
+                        (click)="!tieneTicketFactura(f.idFactura) && irACrearTicket(f.idFactura, (f.detalles && f.detalles.length > 0) ? f.detalles[0].tipoHeno : undefined)" 
                         [title]="tieneTicketFactura(f.idFactura) ? 'Esta factura ya cuenta con un ticket de soporte radicado' : 'Radicar un ticket sobre esta factura'">
                   <span *ngIf="!tieneTicketFactura(f.idFactura)">🎫 Radicar Ticket</span>
                   <span *ngIf="tieneTicketFactura(f.idFactura)">✓ Ticket Radicado</span>

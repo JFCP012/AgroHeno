@@ -5,7 +5,11 @@
     <div class="header-inner">
       <!-- Left side: Admin -->
       <div class="header-left">
-        <button class="header-admin-btn" (click)="abrirModalLogin()" title="Modo Administrador">
+        <button *ngIf="esAdmin" class="header-admin-btn btn-panel-activo" (click)="volverAlPanel()" title="Volver al Panel de Administración">
+          <span class="lock-icon">⚙️</span>
+          <span class="admin-label">Volver al Panel</span>
+        </button>
+        <button *ngIf="!esAdmin" class="header-admin-btn" (click)="abrirModalLogin()" title="Modo Administrador">
           <span class="lock-icon">🔒</span>
           <span class="admin-label">Admin</span>
         </button>

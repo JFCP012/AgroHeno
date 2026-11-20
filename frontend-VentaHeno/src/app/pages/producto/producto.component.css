@@ -906,6 +906,21 @@
   box-shadow: 0 4px 10px rgba(191, 160, 84, 0.25);
 }
 
+.btn-panel-activo {
+  background-color: #cca243 !important;
+  border-color: #cca243 !important;
+  color: #351903 !important;
+  font-weight: 750 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+}
+
+.btn-panel-activo:hover {
+  background-color: #e5b84c !important;
+  border-color: #e5b84c !important;
+  color: #1e1105 !important;
+  transform: translateY(-1px);
+}
+
 .lock-icon {
   font-size: 0.85rem;
 }

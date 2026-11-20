@@ -80,7 +80,19 @@ export class ProductoComponent implements OnInit {
     });
   }
 
+  get esAdmin(): boolean {
+    return this.adminService.isAdminLoggedIn();
+  }
+
+  volverAlPanel(): void {
+    this.router.navigate(['/admin']);
+  }
+
   abrirModalLogin() {
+    if (this.adminService.isAdminLoggedIn()) {
+      this.router.navigate(['/admin']);
+      return;
+    }
     this.mostrarModalLogin = true;
     this.idAdminInput = null;
     this.claveInput = '';
@@ -103,31 +115,43 @@ export class ProductoComponent implements OnInit {
     this.adminService.loginAdmin(this.idAdminInput, this.claveInput).subscribe({
       next: (resp) => {
         if (resp && typeof resp === 'object') {
+          // Bloquear terminantemente si el usuario está inactivo
+          if (resp.activo === false) {
+            this.adminService.logoutAdmin();
+            this.loginError = 'El usuario se encuentra inactivo. Comuníquese con el administrador.';
+            this.cdr.detectChanges();
+            return;
+          }
+
           const rawRol = (resp.rol || 'ADMIN').toUpperCase().trim();
           const cleanRol = rawRol.replace(/[^A-Z]/g, '');
 
           this.mostrarModalLogin = false;
 
-          if (rawRol === 'ADMIN') {
+          if (cleanRol === 'ADMIN' || cleanRol.includes('ADMIN')) {
             this.router.navigate(['/admin']);
           } else if (cleanRol === 'GESTORTICKETS' || cleanRol === 'GESTOR' || cleanRol.includes('TICKET')) {
             this.router.navigate(['/gestion-tickets']);
           } else if (cleanRol === 'ASESOR' || cleanRol.includes('ASESOR') || cleanRol.includes('TECNICO')) {
             this.router.navigate(['/asesor-tickets']);
           } else {
-            alert(`Inicio de sesión correcto como ${resp.nombre || 'Usuario'} (Rol: ${resp.rol}). No cuentas con permisos para este panel.`);
+            this.adminService.logoutAdmin();
+            this.loginError = `El rol (${resp.rol}) no tiene permisos para acceder a ningún panel.`;
+            this.cdr.detectChanges();
           }
         } else if (resp === true) {
           this.mostrarModalLogin = false;
           this.router.navigate(['/admin']);
         } else {
+          this.adminService.logoutAdmin();
           this.loginError = 'ID o clave incorrectos';
         }
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error al iniciar sesión:', err);
-        this.loginError = 'ID o clave incorrectos';
+        this.adminService.logoutAdmin();
+        this.loginError = err.error?.message || (err.status === 401 ? 'ID o clave incorrectos' : 'Error en el servidor al intentar iniciar sesión.');
         this.cdr.detectChanges();
       }
     });

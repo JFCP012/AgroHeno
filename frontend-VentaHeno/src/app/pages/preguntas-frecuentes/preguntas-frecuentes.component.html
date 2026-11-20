@@ -1,0 +1,114 @@
+<!-- Header Oficial AgroHeno -->
+<header class="simple-header">
+  <div class="simple-header-inner" (click)="volver()" style="cursor: pointer;" title="Volver al inicio">
+    <div class="header-branding">
+      <img src="assets/Imagenes/Logo2.png" alt="AgroHeno Logo" class="agroheno-logo">
+      <div class="brand-text-container">
+        <span class="brand-main">AgroHeno</span>
+        <span class="brand-sub">CENTRO DE AYUDA Y PREGUNTAS FRECUENTES</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="gestion-container">
+
+  <!-- Navegación de retorno -->
+  <div class="top-nav-bar">
+    <button class="btn-volver" (click)="volver()">
+      {{ idFactura ? '← Volver a Mis Facturas' : '← Volver al inicio' }}
+    </button>
+  </div>
+
+  <!-- Barra de Título y Texto Explicativo (Sin botón arriba para obligar a consultar las preguntas) -->
+  <div class="action-bar">
+    <div class="bar-left">
+      <h2>Preguntas Frecuentes y Soluciones Rápidas</h2>
+      <p class="bar-subtitle">
+        Encuentra respuesta inmediata a las dudas más comunes sobre calidad de pacas, humedad, tiempos de entrega y
+        facturación antes de radicar un ticket de soporte.
+      </p>
+
+      <!-- Nota explicativa contextual si viene desde una factura -->
+      <div *ngIf="idFactura" class="invoice-context-note">
+        <span>Estás consultando soporte para tu <strong>Factura #{{ idFactura }}</strong><span *ngIf="tipoHeno"> —
+            Producto: <strong>{{ tipoHeno }}</strong></span>. Por favor revisa las preguntas y recomendaciones a
+          continuación; si ninguna resuelve tu caso, al final podrás radicar tu ticket con los datos precargados.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de Filtros Sobria -->
+  <div class="filter-bar">
+    <div class="filter-item">
+      <label>Categoría:</label>
+      <select [(ngModel)]="categoriaSeleccionada" (change)="seleccionarCategoria(categoriaSeleccionada)"
+        class="filter-select">
+        <option value="TODAS">Todas</option>
+        <option *ngFor="let cat of categoriasDisponibles" [value]="cat.id">
+          {{ cat.nombre }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Estado de Carga -->
+  <div *ngIf="cargando" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando preguntas frecuentes...</p>
+  </div>
+
+  <!-- Mensaje de Error -->
+  <div *ngIf="!cargando && errorMsg" class="alert alert-error">
+    {{ errorMsg }}
+  </div>
+
+  <!-- Lista de Preguntas Frecuentes (Acordeón interactivo) -->
+  <div *ngIf="!cargando && !errorMsg" class="faq-list">
+
+    <div *ngIf="preguntasFiltradas.length === 0" class="empty-state">
+      <p>No se encontraron preguntas en esta categoría.</p>
+    </div>
+
+    <!-- Cards de preguntas -->
+    <div *ngFor="let p of preguntasFiltradas" class="faq-card" [class.expanded]="isExpandida(p.idPregunta)">
+
+      <div class="faq-card-header" (click)="togglePregunta(p.idPregunta)">
+        <div class="faq-header-left">
+          <span class="faq-cat-badge">{{ getNombreCategoria(p.categoria) }}</span>
+          <h3 class="faq-pregunta-title">{{ p.pregunta }}</h3>
+        </div>
+        <button type="button" class="faq-toggle-btn" [attr.aria-expanded]="isExpandida(p.idPregunta)">
+          <svg class="chevron-icon" [class.rotated]="isExpandida(p.idPregunta)" width="20" height="20"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <div *ngIf="isExpandida(p.idPregunta)" class="faq-card-body">
+        <div class="faq-respuesta-content">
+          <p>{{ p.respuesta }}</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECCIÓN AL FINAL: SOLO EL TEXTO Y EL BOTÓN (Sin tarjeta/burbuja) -->
+    <div class="bottom-action-row">
+      <div class="bottom-action-text">
+        <h3>¿Estas respuestas no resolvieron tu inconveniente?</h3>
+        <p>
+          Si tu caso requiere atención especializada de nuestro equipo técnico, reposición de pacas o revisión en garantía, puedes continuar para radicar tu ticket formal.
+        </p>
+      </div>
+      <button type="button" class="btn-continuar-ticket" (click)="continuarACrearTicket()">
+        <span>Radicar Ticket {{ idFactura ? '#' + idFactura : '' }}</span>
+        <span class="arrow-icon">→</span>
+      </button>
+    </div>
+
+  </div>
+
+</div>
