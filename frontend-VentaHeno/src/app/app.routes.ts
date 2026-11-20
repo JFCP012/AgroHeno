@@ -18,6 +18,7 @@ import { GestionTicketsComponent } from './pages/gestion-tickets/gestion-tickets
 import { gestorTicketsGuard } from './guards/gestor-tickets.guard';
 import { AsesorTicketsComponent } from './pages/asesor-tickets/asesor-tickets.component';
 import { asesorTicketsGuard } from './guards/asesor-tickets.guard';
+import { CrearUsuarioAdminComponent } from './pages/crear-usuario-admin/crear-usuario-admin.component';
 
 export const routes: Routes = [
     { path: '', component: ProductoComponent },
@@ -31,6 +32,8 @@ export const routes: Routes = [
     { path: 'crearTicket', component: CrearTicketComponent },
     { path: 'crear-ticket', component: CrearTicketComponent },
     { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
+    { path: 'crear-usuario-admin', component: CrearUsuarioAdminComponent, canActivate: [adminGuard] },
+    { path: 'gestion-usuarios', component: CrearUsuarioAdminComponent, canActivate: [adminGuard] },
     { path: 'gestion-tickets', component: GestionTicketsComponent, canActivate: [gestorTicketsGuard] },
     { path: 'asesor-tickets', component: AsesorTicketsComponent, canActivate: [asesorTicketsGuard] },
     { path: 'reportes-mes', component: ReportesMesComponent, canActivate: [adminGuard] },

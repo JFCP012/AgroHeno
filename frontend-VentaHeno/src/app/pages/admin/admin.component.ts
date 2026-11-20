@@ -22,6 +22,10 @@ export class AdminComponent {
     this.router.navigate(['/gestion-henos']);
   }
 
+  irAGestionUsuarios() {
+    this.router.navigate(['/crear-usuario-admin']);
+  }
+
   irAGestionTickets() {
     this.router.navigate(['/gestion-tickets']);
   }

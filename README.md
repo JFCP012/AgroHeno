@@ -23,7 +23,7 @@ El backend está estructurado siguiendo un diseño multicapa y el patrón **MVC 
 ## Tecnologías Utilizadas
 
 **Backend:**
-*   Java 25
+*   Java 24 (o superior)
 *   Spring Boot 4.1.0
 *   Spring Data JPA & Hibernate
 *   PostgreSQL (Base de Datos)
@@ -40,7 +40,7 @@ El backend está estructurado siguiendo un diseño multicapa y el patrón **MVC 
 
 ## Requisitos Previos
 Para poder levantar este proyecto en modo desarrollo en tu máquina local, necesitas:
-*   [Java 25 (JDK)](https://adoptium.net/)
+*   [Java 24 o 21 (JDK)](https://adoptium.net/)
 *   [Node.js](https://nodejs.org/) (v20 recomendada) y `npm`
 *   [Angular CLI](https://angular.io/cli) global (`npm install -g @angular/cli`)
 *   [PostgreSQL](https://www.postgresql.org/) instalado y en ejecución
