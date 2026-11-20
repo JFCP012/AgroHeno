@@ -34,18 +34,19 @@ public class AdminServise {
             throw new IllegalArgumentException("La contraseña del usuario es obligatoria.");
         }
         
-        if (usuario.getRol() == null || usuario.getRol().trim().isEmpty()) {
+        String rol = usuario.getRol();
+        if (rol == null || rol.trim().isEmpty()) {
             usuario.setRol("ADMIN");
         } else {
-            String rolNormalizado = usuario.getRol().trim().toUpperCase();
-            if (!rolNormalizado.equals("ADMIN") && !rolNormalizado.equals("GESTOR_TICKETS") && !rolNormalizado.equals("ASESOR")) {
-                throw new IllegalArgumentException("El rol '" + usuario.getRol() + "' no es válido. Roles válidos: ADMIN, GESTOR_TICKETS, ASESOR.");
+            String rolNormalizado = rol.trim().toUpperCase();
+            if (!rolNormalizado.equals("ADMIN") && !rolNormalizado.equals("ASESOR") && !rolNormalizado.equals("GESTOR_TICKETS")) {
+                throw new IllegalArgumentException("El perfil seleccionado no es válido. Opciones permitidas: ADMIN, ASESOR, GESTOR_TICKETS.");
             }
             usuario.setRol(rolNormalizado);
         }
 
         if (this.repositorio.existsById(usuario.getCedulaU())) {
-            throw new IllegalArgumentException("Ya existe un usuario interno registrado con la cédula " + usuario.getCedulaU() + ".");
+            throw new IllegalStateException("Ya existe un usuario registrado con la cédula " + usuario.getCedulaU() + ". No es posible crear otro usuario con la misma cédula.");
         }
 
         return this.repositorio.save(usuario);

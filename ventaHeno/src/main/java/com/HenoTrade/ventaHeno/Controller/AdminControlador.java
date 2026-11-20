@@ -41,8 +41,10 @@ public class AdminControlador {
         try {
             Usuario nuevoUsuario = this.adminServise.crearUsuario(usuario);
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(java.util.Map.of("message", e.getMessage()));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(java.util.Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(java.util.Map.of("message", "Error al crear el usuario: " + e.getMessage()));

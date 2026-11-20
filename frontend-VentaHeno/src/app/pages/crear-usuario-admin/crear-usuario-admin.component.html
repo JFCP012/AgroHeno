@@ -1,366 +1,155 @@
-<!-- Header superior del panel Admin -->
 <header class="admin-top-header">
   <div class="admin-header-inner">
     <div class="admin-header-left">
-      <button class="btn-admin-back" (click)="volverAlPanel()">← Volver al Panel</button>
+      <button type="button" class="btn-admin-back" (click)="volverAlPanel()">Volver al Panel</button>
     </div>
     <div class="admin-header-branding" (click)="volverAlPanel()" style="cursor: pointer;">
-      <img src="assets/Imagenes/Logo2.png" alt="AgroHeno Logo" class="admin-header-logo">
+      <img src="assets/Imagenes/Logo2.png" alt="AgroHeno" class="admin-header-logo">
       <div class="admin-brand-text">
         <span class="brand-main">AgroHeno</span>
         <span class="brand-sub">PANEL DE CONTROL</span>
       </div>
     </div>
     <div class="admin-header-right">
-      <span class="admin-header-badge">Gestión de Usuarios 👥</span>
+      <span class="admin-header-badge">Personal Interno</span>
     </div>
   </div>
 </header>
 
-<div class="modulo-container">
-  <!-- Encabezado con selector de pestañas -->
-  <div class="modulo-header">
-    <div class="titulo-area">
-      <h1>Alta y Gestión de Usuarios</h1>
-      <p>Crea cuentas internas (Administradores, Gestores, Asesores) o da de alta nuevos Clientes para la tienda.</p>
-    </div>
-
-    <div class="pestanas-bar">
-      <button class="btn-tab" [class.activa]="pestanaActiva === 'crear'" (click)="cambiarPestana('crear')">
-        ➕ Dar de Alta Cuenta
-      </button>
-      <button class="btn-tab" [class.activa]="pestanaActiva === 'listar'" (click)="cambiarPestana('listar')">
-        👥 Directorio de Cuentas
-      </button>
-    </div>
+<main class="page-container">
+  <div class="page-header">
+    <h1>Gestión de Usuarios Internos</h1>
+    <p>Alta de cuentas de acceso para el personal operativo y administrativo del sistema.</p>
   </div>
 
-  <!-- Alertas globales -->
-  <div *ngIf="successMsg" class="alert alert-success">
-    <span class="alert-icon">✅</span>
-    <span>{{ successMsg }}</span>
-  </div>
-  <div *ngIf="errorMsg" class="alert alert-error">
-    <span class="alert-icon">⚠️</span>
-    <span>{{ errorMsg }}</span>
+  <!-- Alertas de estado en texto plano -->
+  <div *ngIf="successMsg" class="alert alert-success" role="alert">
+    {{ successMsg }}
   </div>
 
-  <!-- PESTAÑA 1: FORMULARIO DE ALTA -->
-  <div *ngIf="pestanaActiva === 'crear'" class="card-formulario-dinamico">
-    
-    <!-- Selector principal de Tipo de Cuenta -->
-    <div class="selector-tipo-cuenta">
-      <label class="selector-label">
-        <span class="label-numero">1</span> Selecciona el Tipo de Cuenta a Registrar:
-      </label>
-      
-      <div class="opciones-grid">
-        <!-- Opción Cliente -->
-        <div class="opcion-card" [class.seleccionada]="tipoCuenta === 'CLIENTE'" (click)="cambiarTipoCuenta('CLIENTE')">
-          <div class="opcion-header">
-            <span class="opcion-icon">🛒</span>
-            <input type="radio" name="tipoCuenta" value="CLIENTE" [ngModel]="tipoCuenta" (ngModelChange)="cambiarTipoCuenta($event)">
-          </div>
-          <h3>Cliente / Comprador</h3>
-          <p>Cuenta para compras en la tienda de heno y seguimiento de pedidos.</p>
-          <span class="badge-tipo badge-cliente">Entidad: Cliente</span>
-        </div>
+  <div *ngIf="errorMsg" class="alert alert-error" role="alert">
+    {{ errorMsg }}
+  </div>
 
-        <!-- Opción Administrador -->
-        <div class="opcion-card" [class.seleccionada]="tipoCuenta === 'ADMIN'" (click)="cambiarTipoCuenta('ADMIN')">
-          <div class="opcion-header">
-            <span class="opcion-icon">👑</span>
-            <input type="radio" name="tipoCuenta" value="ADMIN" [ngModel]="tipoCuenta" (ngModelChange)="cambiarTipoCuenta($event)">
-          </div>
-          <h3>Administrador</h3>
-          <p>Acceso total a reportes, inventario, henos y gestión del sistema.</p>
-          <span class="badge-tipo badge-admin">Rol: ADMIN</span>
-        </div>
-
-        <!-- Opción Gestor de Tickets -->
-        <div class="opcion-card" [class.seleccionada]="tipoCuenta === 'GESTOR_TICKETS'" (click)="cambiarTipoCuenta('GESTOR_TICKETS')">
-          <div class="opcion-header">
-            <span class="opcion-icon">🎯</span>
-            <input type="radio" name="tipoCuenta" value="GESTOR_TICKETS" [ngModel]="tipoCuenta" (ngModelChange)="cambiarTipoCuenta($event)">
-          </div>
-          <h3>Gestor de Tickets</h3>
-          <p>Control del SLA, supervisión de casos y asignación de tickets.</p>
-          <span class="badge-tipo badge-gestor">Rol: GESTOR_TICKETS</span>
-        </div>
-
-        <!-- Opción Asesor de Tickets -->
-        <div class="opcion-card" [class.seleccionada]="tipoCuenta === 'ASESOR'" (click)="cambiarTipoCuenta('ASESOR')">
-          <div class="opcion-header">
-            <span class="opcion-icon">🎧</span>
-            <input type="radio" name="tipoCuenta" value="ASESOR" [ngModel]="tipoCuenta" (ngModelChange)="cambiarTipoCuenta($event)">
-          </div>
-          <h3>Asesor de Tickets</h3>
-          <p>Atención directa, diagnóstico técnico y resolución de casos.</p>
-          <span class="badge-tipo badge-asesor">Rol: ASESOR</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="separador"></div>
-
-    <!-- FORMULARIO: USUARIO INTERNO (ADMIN, GESTOR_TICKETS, ASESOR) -->
-    <div *ngIf="esUsuarioInterno" class="seccion-formulario">
-      <div class="seccion-intro">
-        <label class="selector-label">
-          <span class="label-numero">2</span> Complete los Datos del Empleado ({{ etiquetaRol }}):
-        </label>
-        <span class="info-tag">Registrará en la tabla <code>usuario</code></span>
+  <div class="content-grid">
+    <!-- Formulario de Creación -->
+    <section class="card form-card">
+      <div class="card-header">
+        <h2>Nuevo Usuario</h2>
+        <span class="card-subtitle">Complete los campos requeridos para dar de alta un nuevo miembro del equipo.</span>
       </div>
 
-      <form (ngSubmit)="onSubmit()" #usuarioForm="ngForm">
-        <div class="form-grid">
-          <!-- Cédula U -->
-          <div class="form-group">
-            <label for="cedulaU">Cédula del Usuario *</label>
-            <input type="text" id="cedulaU" name="cedulaU" [(ngModel)]="cedulaUInput" required
-              (input)="validarCedulaU()" placeholder="Ej. 1098765432" pattern="[0-9]+" #cedulaUCtrl="ngModel">
-            <small class="field-hint">Solo números. Identificador único en el sistema.</small>
-            <div *ngIf="cedulaUCtrl.invalid && (cedulaUCtrl.dirty || cedulaUCtrl.touched)" class="field-error">
-              <small *ngIf="cedulaUCtrl.errors?.['required']">La cédula es requerida.</small>
-              <small *ngIf="cedulaUCtrl.errors?.['pattern']">Solo se admiten caracteres numéricos.</small>
-            </div>
-          </div>
-
-          <!-- Nombre Completo -->
-          <div class="form-group">
-            <label for="nombreUsuario">Nombre y Apellidos *</label>
-            <input type="text" id="nombreUsuario" name="nombreUsuario" [(ngModel)]="usuarioInterno.nombre" required
-              placeholder="Ej. Carlos Martínez" #nombreUCtrl="ngModel">
-            <div *ngIf="nombreUCtrl.invalid && (nombreUCtrl.dirty || nombreUCtrl.touched)" class="field-error">
-              <small *ngIf="nombreUCtrl.errors?.['required']">El nombre es requerido.</small>
-            </div>
-          </div>
-
-          <!-- Clave / Contraseña -->
-          <div class="form-group">
-            <label for="claveUsuario">Contraseña de Acceso *</label>
-            <input type="password" id="claveUsuario" name="claveUsuario" [(ngModel)]="usuarioInterno.clave" required
-              placeholder="Mínimo 4 caracteres" #claveUCtrl="ngModel">
-            <div *ngIf="claveUCtrl.invalid && (claveUCtrl.dirty || claveUCtrl.touched)" class="field-error">
-              <small *ngIf="claveUCtrl.errors?.['required']">La contraseña es obligatoria.</small>
-            </div>
-          </div>
-
-          <!-- Rol Asignado (Bloqueado/Automático) -->
-          <div class="form-group">
-            <label for="rolBloqueado">Rol Asignado Automáticamente</label>
-            <div class="rol-display-box">
-              <span class="rol-badge-large" [ngClass]="{
-                'badge-admin': usuarioInterno.rol === 'ADMIN',
-                'badge-gestor': usuarioInterno.rol === 'GESTOR_TICKETS',
-                'badge-asesor': usuarioInterno.rol === 'ASESOR'
-              }">
-                {{ usuarioInterno.rol }}
-              </span>
-              <span class="rol-desc">{{ etiquetaRol }}</span>
-            </div>
+      <form [formGroup]="usuarioForm" (ngSubmit)="onSubmit()" novalidate>
+        <!-- Cédula -->
+        <div class="form-group">
+          <label for="cedulaU">Cédula</label>
+          <input
+            type="text"
+            id="cedulaU"
+            formControlName="cedulaU"
+            placeholder="Ingrese el número de cédula"
+            maxlength="20"
+            [class.input-error]="f['cedulaU'].invalid && (f['cedulaU'].dirty || f['cedulaU'].touched)">
+          <div *ngIf="f['cedulaU'].invalid && (f['cedulaU'].dirty || f['cedulaU'].touched)" class="field-error">
+            <span *ngIf="f['cedulaU'].errors?.['required']">La cédula es obligatoria.</span>
+            <span *ngIf="f['cedulaU'].errors?.['pattern']">Solo se admiten valores numéricos.</span>
           </div>
         </div>
 
+        <!-- Nombre Completo -->
+        <div class="form-group">
+          <label for="nombre">Nombre completo</label>
+          <input
+            type="text"
+            id="nombre"
+            formControlName="nombre"
+            placeholder="Nombres y apellidos"
+            [class.input-error]="f['nombre'].invalid && (f['nombre'].dirty || f['nombre'].touched)">
+          <div *ngIf="f['nombre'].invalid && (f['nombre'].dirty || f['nombre'].touched)" class="field-error">
+            <span *ngIf="f['nombre'].errors?.['required']">El nombre es obligatorio.</span>
+            <span *ngIf="f['nombre'].errors?.['minlength']">Debe contener al menos 3 caracteres.</span>
+          </div>
+        </div>
+
+        <!-- Contraseña -->
+        <div class="form-group">
+          <label for="clave">Contraseña</label>
+          <input
+            type="password"
+            id="clave"
+            formControlName="clave"
+            placeholder="Contraseña de acceso"
+            [class.input-error]="f['clave'].invalid && (f['clave'].dirty || f['clave'].touched)">
+          <div *ngIf="f['clave'].invalid && (f['clave'].dirty || f['clave'].touched)" class="field-error">
+            <span *ngIf="f['clave'].errors?.['required']">La contraseña es obligatoria.</span>
+            <span *ngIf="f['clave'].errors?.['minlength']">Debe tener un mínimo de 4 caracteres.</span>
+          </div>
+        </div>
+
+        <!-- Tipo de Usuario / Perfil -->
+        <div class="form-group">
+          <label for="rol">Tipo de usuario</label>
+          <select id="rol" formControlName="rol">
+            <option *ngFor="let perfil of perfilesDisponibles" [value]="perfil.valor">
+              {{ perfil.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Acciones -->
         <div class="form-actions">
-          <button type="button" class="btn-cancel" (click)="limpiarFormularioInterno()">
-            Limpiar Campos
+          <button type="button" class="btn btn-secondary" (click)="limpiarFormulario()">
+            Limpiar
           </button>
-          <button type="submit" class="btn-submit" [disabled]="!usuarioForm.form.valid || loading">
-            <span *ngIf="loading">⏳ Creando Usuario...</span>
-            <span *ngIf="!loading">💾 Registrar Usuario Interno</span>
+          <button type="submit" class="btn btn-primary" [disabled]="usuarioForm.invalid || loading">
+            <span *ngIf="loading">Guardando...</span>
+            <span *ngIf="!loading">Registrar Usuario</span>
           </button>
         </div>
       </form>
-    </div>
+    </section>
 
-    <!-- FORMULARIO: CLIENTE / COMPRADOR -->
-    <div *ngIf="!esUsuarioInterno" class="seccion-formulario">
-      <div class="seccion-intro">
-        <label class="selector-label">
-          <span class="label-numero">2</span> Complete los Datos del Cliente:
-        </label>
-        <span class="info-tag">Registrará en la tabla <code>cliente</code></span>
+    <!-- Listado de Usuarios Existentes -->
+    <section class="card list-card">
+      <div class="card-header">
+        <h2>Personal Registrado</h2>
+        <span class="card-subtitle">{{ usuariosRegistrados.length }} registros actuales en el sistema</span>
       </div>
 
-      <form (ngSubmit)="onSubmit()" #clienteForm="ngForm">
-        <div class="form-grid">
-          <!-- Cédula -->
-          <div class="form-group">
-            <label for="cedulaCliente">Cédula del Cliente *</label>
-            <input type="text" id="cedulaCliente" name="cedula" [(ngModel)]="cliente.cedula" required
-              (input)="validarCedulaCliente()" placeholder="Ej. 123456789" pattern="[0-9]+" #cedulaClienteCtrl="ngModel">
-            <div *ngIf="cedulaClienteCtrl.invalid && (cedulaClienteCtrl.dirty || cedulaClienteCtrl.touched)" class="field-error">
-              <small *ngIf="cedulaClienteCtrl.errors?.['required']">La cédula es obligatoria.</small>
-              <small *ngIf="cedulaClienteCtrl.errors?.['pattern']">Solo números permitidos.</small>
-            </div>
-          </div>
-
-          <!-- Nombre Completo -->
-          <div class="form-group">
-            <label for="nombreCliente">Nombre Completo *</label>
-            <input type="text" id="nombreCliente" name="nombre" [(ngModel)]="cliente.nombre" required
-              placeholder="Ej. Juan Pérez" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+" #nombreClienteCtrl="ngModel">
-            <div *ngIf="nombreClienteCtrl.invalid && (nombreClienteCtrl.dirty || nombreClienteCtrl.touched)" class="field-error">
-              <small *ngIf="nombreClienteCtrl.errors?.['required']">El nombre es obligatorio.</small>
-              <small *ngIf="nombreClienteCtrl.errors?.['pattern']">Solo se admiten letras.</small>
-            </div>
-          </div>
-
-          <!-- Teléfono -->
-          <div class="form-group">
-            <label for="telefonoCliente">Teléfono de Contacto *</label>
-            <input type="text" id="telefonoCliente" name="telefono" [(ngModel)]="cliente.telefono" required
-              (input)="validarTelefonoCliente()" placeholder="Ej. 3001234567" pattern="[0-9]+" #telefonoClienteCtrl="ngModel">
-            <div *ngIf="telefonoClienteCtrl.invalid && (telefonoClienteCtrl.dirty || telefonoClienteCtrl.touched)" class="field-error">
-              <small *ngIf="telefonoClienteCtrl.errors?.['required']">El teléfono es obligatorio.</small>
-              <small *ngIf="telefonoClienteCtrl.errors?.['pattern']">Solo números permitidos.</small>
-            </div>
-          </div>
-
-          <!-- Dirección -->
-          <div class="form-group">
-            <label for="direccionCliente">Dirección de Entrega (Opcional)</label>
-            <input type="text" id="direccionCliente" name="direccion" [(ngModel)]="cliente.direccion"
-              placeholder="Ej. Finca La Colina, Vereda El Hato">
-          </div>
-
-          <!-- Correo -->
-          <div class="form-group">
-            <label for="correoCliente">Correo Electrónico (Opcional)</label>
-            <input type="email" id="correoCliente" name="correo" [(ngModel)]="cliente.correo"
-              placeholder="Ej. cliente@finca.com">
-          </div>
-
-          <!-- Clave -->
-          <div class="form-group">
-            <label for="claveCliente">Contraseña para el Cliente *</label>
-            <input type="password" id="claveCliente" name="clave" [(ngModel)]="cliente.clave" required
-              placeholder="Contraseña inicial para compras" #claveClienteCtrl="ngModel">
-            <div *ngIf="claveClienteCtrl.invalid && (claveClienteCtrl.dirty || claveClienteCtrl.touched)" class="field-error">
-              <small *ngIf="claveClienteCtrl.errors?.['required']">La contraseña es requerida.</small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Foto de Perfil Opcional -->
-        <div class="form-group full-width" style="margin-top: 1rem; margin-bottom: 1.5rem;">
-          <label>Fotografía o Avatar del Cliente (Opcional)</label>
-          <div class="upload-zone">
-            <div *ngIf="!imagenPreview" class="upload-placeholder">
-              <span class="upload-icon">📸</span>
-              <span class="upload-text">Haz clic o arrastra una imagen aquí (JPG, PNG)</span>
-            </div>
-
-            <div *ngIf="imagenPreview" class="preview-container">
-              <img [src]="imagenPreview" alt="Vista previa" class="preview-img">
-              <div class="preview-actions">
-                <button type="button" class="btn-remove-photo" (click)="removerImagen()">Quitar Foto</button>
-              </div>
-            </div>
-
-            <input type="file" id="fotoCliente" class="file-input" (change)="onFileSelected($event)" accept="image/*">
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn-cancel" (click)="limpiarFormularioCliente()">
-            Limpiar Campos
-          </button>
-          <button type="submit" class="btn-submit" [disabled]="!clienteForm.form.valid || loading">
-            <span *ngIf="loading">⏳ Registrando Cliente...</span>
-            <span *ngIf="!loading">🛒 Registrar Cliente</span>
-          </button>
-        </div>
-      </form>
-    </div>
-
-  </div>
-
-  <!-- PESTAÑA 2: LISTADO DE CUENTAS EXISTENTES -->
-  <div *ngIf="pestanaActiva === 'listar'" class="card-listado">
-    <div class="listado-seccion">
-      <div class="listado-header">
-        <h3>👔 Usuarios Internos del Sistema (Personal)</h3>
-        <span class="badge-total">{{ usuariosInternos.length }} registrados</span>
+      <div *ngIf="cargandoUsuarios" class="state-message">
+        Cargando listado de usuarios...
       </div>
 
-      <div *ngIf="cargandoListas" class="loading-state">
-        <span class="spinner">🌾</span> Cargando usuarios...
+      <div *ngIf="!cargandoUsuarios && usuariosRegistrados.length === 0" class="state-message">
+        No hay registros en la base de datos.
       </div>
 
-      <div *ngIf="!cargandoListas && usuariosInternos.length === 0" class="empty-state">
-        No hay usuarios internos cargados.
-      </div>
-
-      <div *ngIf="!cargandoListas && usuariosInternos.length > 0" class="table-responsive">
-        <table class="data-table">
+      <div *ngIf="!cargandoUsuarios && usuariosRegistrados.length > 0" class="table-container">
+        <table class="user-table">
           <thead>
             <tr>
-              <th>Cédula (ID)</th>
-              <th>Nombre Completo</th>
-              <th>Rol en el Sistema</th>
+              <th>Cédula</th>
+              <th>Nombre</th>
+              <th>Tipo de Usuario</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let u of usuariosInternos">
-              <td><strong>{{ u.cedulaU }}</strong></td>
-              <td>{{ u.nombre }}</td>
+            <tr *ngFor="let usuario of usuariosRegistrados">
+              <td class="cell-id">{{ usuario.cedulaU }}</td>
+              <td>{{ usuario.nombre }}</td>
               <td>
-                <span class="badge-tipo" [ngClass]="{
-                  'badge-admin': (u.rol || '').toUpperCase() === 'ADMIN',
-                  'badge-gestor': (u.rol || '').toUpperCase() === 'GESTOR_TICKETS',
-                  'badge-asesor': (u.rol || '').toUpperCase() === 'ASESOR'
+                <span class="status-pill" [ngClass]="{
+                  'pill-admin': (usuario.rol || '').toUpperCase() === 'ADMIN',
+                  'pill-gestor': (usuario.rol || '').toUpperCase() === 'GESTOR_TICKETS',
+                  'pill-asesor': (usuario.rol || '').toUpperCase() === 'ASESOR'
                 }">
-                  {{ u.rol || 'ADMIN' }}
+                  {{ obtenerNombrePerfil(usuario.rol) }}
                 </span>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
-
-    <div class="separador"></div>
-
-    <div class="listado-seccion">
-      <div class="listado-header">
-        <h3>🛒 Clientes Registrados</h3>
-        <span class="badge-total">{{ clientesList.length }} registrados</span>
-      </div>
-
-      <div *ngIf="clientesList.length === 0" class="empty-state">
-        No hay clientes registrados en la plataforma.
-      </div>
-
-      <div *ngIf="clientesList.length > 0" class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Foto</th>
-              <th>Cédula</th>
-              <th>Nombre</th>
-              <th>Teléfono</th>
-              <th>Correo</th>
-              <th>Dirección</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let c of clientesList">
-              <td>
-                <img *ngIf="c.imagen" [src]="c.imagen" alt="Foto" class="avatar-mini">
-                <span *ngIf="!c.imagen" class="avatar-placeholder">👤</span>
-              </td>
-              <td><strong>{{ c.cedula }}</strong></td>
-              <td>{{ c.nombre }}</td>
-              <td>{{ c.telefono }}</td>
-              <td>{{ c.correo || '—' }}</td>
-              <td>{{ c.direccion || '—' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </section>
   </div>
-
-</div>
+</main>
