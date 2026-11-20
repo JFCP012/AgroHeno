@@ -9,6 +9,13 @@ export interface Usuario {
   rol: string;
 }
 
+export interface NuevoUsuario {
+  cedulaU: number;
+  nombre: string;
+  clave: string;
+  rol: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -69,5 +76,13 @@ export class AdminService {
     sessionStorage.removeItem('isAdmin');
     sessionStorage.removeItem('rol');
     sessionStorage.removeItem('usuario');
+  }
+
+  crearUsuario(usuario: NuevoUsuario): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/crearUsuario`, usuario);
+  }
+
+  listarUsuarios(): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(`${this.apiUrl}/listarUsuarios`);
   }
 }
