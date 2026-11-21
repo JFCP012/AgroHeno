@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ReportesService } from '../../services/reportes.service';
+import { ExcelExportService } from '../../services/excel-export.service';
 import { ReporteFacturasAnimal, Animal } from '../../models/reporte-venta.model';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -17,6 +18,7 @@ import autoTable from 'jspdf-autotable';
 export class ReportesAnimalComponent implements OnInit {
   private router = inject(Router);
   private reportesService = inject(ReportesService);
+  private excelExportService = inject(ExcelExportService);
   private cdr = inject(ChangeDetectorRef);
 
   animalesList: Animal[] = [];
@@ -221,6 +223,16 @@ export class ReportesAnimalComponent implements OnInit {
     } catch (e: any) {
       console.error('Error al generar PDF:', e);
       alert('Error al generar el PDF: ' + e.message);
+    }
+  }
+
+  descargarExcel() {
+    if (!this.reporteAnimal || !this.reporteAnimal.facturas || this.reporteAnimal.facturas.length === 0) return;
+    try {
+      this.excelExportService.exportarReporteAnimal(this.reporteAnimal);
+    } catch (e: any) {
+      console.error('Error al generar Excel:', e);
+      alert('Error al generar el archivo Excel: ' + e.message);
     }
   }
 }

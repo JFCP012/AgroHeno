@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ReportesService } from '../../services/reportes.service';
+import { ExcelExportService } from '../../services/excel-export.service';
 import { HenoService } from '../../services/heno.service';
 import { Heno } from '../../models/heno.model';
 import { ReporteFacturasHeno } from '../../models/reporte-venta.model';
@@ -19,6 +20,7 @@ import autoTable from 'jspdf-autotable';
 export class ReportesPacaComponent implements OnInit {
   private router = inject(Router);
   private reportesService = inject(ReportesService);
+  private excelExportService = inject(ExcelExportService);
   private henoService = inject(HenoService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -202,6 +204,16 @@ export class ReportesPacaComponent implements OnInit {
     } catch (e: any) {
       console.error('Error al generar PDF:', e);
       alert('Error al generar el PDF: ' + e.message);
+    }
+  }
+
+  descargarExcel() {
+    if (!this.reportePaca || !this.reportePaca.facturas || this.reportePaca.facturas.length === 0) return;
+    try {
+      this.excelExportService.exportarReportePaca(this.reportePaca, this.pacaSeleccionada);
+    } catch (e: any) {
+      console.error('Error al generar Excel:', e);
+      alert('Error al generar el archivo Excel: ' + e.message);
     }
   }
 }

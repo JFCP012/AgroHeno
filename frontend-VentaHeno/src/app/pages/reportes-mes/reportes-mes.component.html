@@ -64,8 +64,12 @@
         </div>
         <button class="btn-generar"
           style="background-color: #2563eb; color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: auto; margin-bottom: auto;"
-          (click)="descargarPDF()">
+          (click)="descargarPDF()" [disabled]="reporteMensual.totalFacturas === 0">
           Descargar PDF
+        </button>
+        <button class="btn-descargar-excel"
+          (click)="descargarExcel()" [disabled]="reporteMensual.totalFacturas === 0">
+          Descargar Excel
         </button>
       </div>
     </div>
