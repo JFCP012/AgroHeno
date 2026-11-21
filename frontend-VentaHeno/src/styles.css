@@ -208,6 +208,41 @@ body {
   box-shadow: 0 6px 10px rgba(204, 162, 67, 0.25) !important;
 }
 
+.reporte-summary-cards {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btn-descargar-excel {
+  background: #1d6f42;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(29, 111, 66, 0.22);
+  font-family: inherit;
+}
+
+.btn-descargar-excel:hover:not([disabled]) {
+  background: #155532;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 10px rgba(29, 111, 66, 0.3);
+}
+
+.btn-descargar-excel[disabled] {
+  background: #a0aec0;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
 .btn-pagina.activa {
   background: var(--primary-gold) !important;
   color: white !important;
