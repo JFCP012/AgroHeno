@@ -70,18 +70,12 @@ export class AsesorTicketsComponent implements OnInit {
       next: (data) => {
         const todos = data || [];
         this.totalAsignados = todos.length;
-        this.totalEnAtencion = todos.filter(t => {
-          const e = (t.estadoTicket || '').toUpperCase();
-          return e === 'EN_ANALISIS' || e === 'EN_CAMPO';
-        }).length;
-        this.totalResueltos = todos.filter(t => {
-          const e = (t.estadoTicket || '').toUpperCase();
-          return e === 'RESUELTO' || e === 'CERRADO';
-        }).length;
+        this.totalEnAtencion = todos.filter(t => (t.estadoTicket || '').toUpperCase() === 'EN_ANALISIS').length;
+        this.totalResueltos = todos.filter(t => (t.estadoTicket || '').toUpperCase() === 'RESUELTO').length;
         this.totalCriticos = todos.filter(t => {
           const p = (t.prioridad || '').toUpperCase();
           const e = (t.estadoTicket || '').toUpperCase();
-          return p === 'CRITICA' && e !== 'RESUELTO' && e !== 'CERRADO';
+          return p === 'CRITICA' && e !== 'RESUELTO';
         }).length;
         this.cdr.detectChanges();
       },
@@ -264,7 +258,7 @@ export class AsesorTicketsComponent implements OnInit {
   esSlaVencido(ticket: Ticket): boolean {
     if (!ticket.fechaLimite) return false;
     const est = (ticket.estadoTicket || '').toUpperCase();
-    if (est === 'RESUELTO' || est === 'CERRADO') return false;
+    if (est === 'RESUELTO') return false;
 
     const limit = this.parseFecha(ticket.fechaLimite);
     if (!limit) return false;
@@ -274,7 +268,7 @@ export class AsesorTicketsComponent implements OnInit {
   esSlaUrgente(ticket: Ticket): boolean {
     if (!ticket.fechaLimite) return false;
     const est = (ticket.estadoTicket || '').toUpperCase();
-    if (est === 'RESUELTO' || est === 'CERRADO') return false;
+    if (est === 'RESUELTO') return false;
 
     const limit = this.parseFecha(ticket.fechaLimite);
     if (!limit) return false;
@@ -360,15 +354,13 @@ export class AsesorTicketsComponent implements OnInit {
     this.router.navigate(['/producto']);
   }
 
-  // Helpers de visualización
+  // Helpers de visualización (3 estados oficiales)
   getEstadoClass(estado?: string): string {
     const e = (estado || '').toUpperCase();
     switch (e) {
       case 'RADICADO': return 'badge-radicado';
       case 'EN_ANALISIS': return 'badge-analisis';
-      case 'EN_CAMPO': return 'badge-campo';
       case 'RESUELTO': return 'badge-resuelto';
-      case 'CERRADO': return 'badge-cerrado';
       default: return 'badge-default';
     }
   }

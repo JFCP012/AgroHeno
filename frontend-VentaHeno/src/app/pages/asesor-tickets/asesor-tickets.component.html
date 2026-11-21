@@ -7,7 +7,8 @@
       <button class="btn-admin-logout" (click)="cerrarSesion()">Cerrar Sesión 🔓</button>
     </div>
     <!-- Center: Logotipo oficial -->
-    <div class="admin-header-branding" (click)="esAdmin ? volverAlPanel() : null" [style.cursor]="esAdmin ? 'pointer' : 'default'">
+    <div class="admin-header-branding" (click)="esAdmin ? volverAlPanel() : null"
+      [style.cursor]="esAdmin ? 'pointer' : 'default'">
       <img src="assets/Imagenes/Logo2.png" alt="AgroHeno Logo" class="admin-header-logo">
       <div class="admin-brand-text">
         <span class="brand-main">AgroHeno</span>
@@ -67,7 +68,8 @@
   <div class="toolbar-box">
     <!-- Buscador de texto (Radicado, Cliente o Cédula) -->
     <div class="search-input-box">
-      <svg class="search-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg class="search-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
@@ -102,8 +104,7 @@
         </select>
       </div>
 
-      <button *ngIf="filtroTexto || filtroFecha || filtroMes"
-        (click)="limpiarFiltros()" class="btn-clear-filters">
+      <button *ngIf="filtroTexto || filtroFecha || filtroMes" (click)="limpiarFiltros()" class="btn-clear-filters">
         Ver pendientes
       </button>
     </div>
@@ -198,8 +199,7 @@
 
           <!-- Límite SLA / Radicado -->
           <td class="td-fechas">
-            <div class="fecha-limite-principal"
-              [class.sla-danger]="esSlaVencido(ticket)"
+            <div class="fecha-limite-principal" [class.sla-danger]="esSlaVencido(ticket)"
               [class.sla-warning]="!esSlaVencido(ticket) && esSlaUrgente(ticket)">
               <span>{{ ticket.fechaLimite | date:'dd/MM/yyyy hh:mm a' }}</span>
               <span *ngIf="esSlaVencido(ticket)" class="sla-mini-tag danger">¡Vencido!</span>
@@ -233,7 +233,8 @@
     <!-- Header del modal -->
     <div class="modal-card-header">
       <div>
-        <span class="modal-rad-label">{{ ticketSeleccionado.codigoRadicado || ('TKT-' + ticketSeleccionado.idTicket) }}</span>
+        <span class="modal-rad-label">{{ ticketSeleccionado.codigoRadicado || ('TKT-' + ticketSeleccionado.idTicket)
+          }}</span>
         <h2>{{ ticketSeleccionado.tituloTicket }}</h2>
       </div>
       <button class="modal-btn-close" (click)="cerrarModalDetalle()" title="Cerrar">×</button>
@@ -280,8 +281,10 @@
         <div class="info-columns">
           <div><strong>Nombre:</strong> {{ getClienteNombre(ticketSeleccionado) }}</div>
           <div><strong>Cédula:</strong> {{ getClienteCedula(ticketSeleccionado) }}</div>
-          <div *ngIf="getClienteTelefono(ticketSeleccionado)"><strong>Teléfono:</strong> {{ getClienteTelefono(ticketSeleccionado) }}</div>
-          <div *ngIf="getClienteCorreo(ticketSeleccionado)"><strong>Correo:</strong> {{ getClienteCorreo(ticketSeleccionado) }}</div>
+          <div *ngIf="getClienteTelefono(ticketSeleccionado)"><strong>Teléfono:</strong> {{
+            getClienteTelefono(ticketSeleccionado) }}</div>
+          <div *ngIf="getClienteCorreo(ticketSeleccionado)"><strong>Correo:</strong> {{
+            getClienteCorreo(ticketSeleccionado) }}</div>
         </div>
       </div>
 
@@ -304,8 +307,10 @@
         <h3>Fechas y Plazos</h3>
         <div class="info-columns text-sm">
           <div><strong>Radicado:</strong> {{ ticketSeleccionado.fechaInicio | date:'dd/MM/yyyy hh:mm a' }}</div>
-          <div *ngIf="ticketSeleccionado.fechaLimite"><strong>Límite SLA:</strong> {{ ticketSeleccionado.fechaLimite | date:'dd/MM/yyyy hh:mm a' }}</div>
-          <div *ngIf="ticketSeleccionado.fechaFin"><strong>Resuelto:</strong> {{ ticketSeleccionado.fechaFin | date:'dd/MM/yyyy hh:mm a' }}</div>
+          <div *ngIf="ticketSeleccionado.fechaLimite"><strong>Límite SLA:</strong> {{ ticketSeleccionado.fechaLimite |
+            date:'dd/MM/yyyy hh:mm a' }}</div>
+          <div *ngIf="ticketSeleccionado.fechaFin"><strong>Resuelto:</strong> {{ ticketSeleccionado.fechaFin |
+            date:'dd/MM/yyyy hh:mm a' }}</div>
         </div>
       </div>
 
@@ -314,17 +319,20 @@
         <h3>Solución / Respuesta al Cliente</h3>
 
         <!-- Si ya está resuelto -->
-        <div *ngIf="ticketSeleccionado.estadoTicket === 'RESUELTO' || ticketSeleccionado.estadoTicket === 'CERRADO'" class="resolved-box">
-          <p class="solution-text">{{ ticketSeleccionado.respuesta || 'Caso resuelto sin observaciones adicionales.' }}</p>
-          <span class="resolved-meta">✓ Atendido por {{ asesorActual?.nombre }} el {{ ticketSeleccionado.fechaFin | date:'dd/MM/yyyy hh:mm a' }}</span>
+        <div *ngIf="ticketSeleccionado.estadoTicket === 'RESUELTO'" class="resolved-box">
+          <p class="solution-text">{{ ticketSeleccionado.respuesta || 'Caso resuelto sin observaciones adicionales.' }}
+          </p>
+          <span class="resolved-meta">✓ Atendido por {{ asesorActual?.nombre }} el {{ ticketSeleccionado.fechaFin |
+            date:'dd/MM/yyyy hh:mm a' }}</span>
         </div>
 
-        <!-- Si está en análisis o en atención: formulario para resolver -->
-        <div *ngIf="ticketSeleccionado.estadoTicket !== 'RESUELTO' && ticketSeleccionado.estadoTicket !== 'CERRADO'">
+        <!-- Si está en análisis: formulario para resolver -->
+        <div *ngIf="ticketSeleccionado.estadoTicket !== 'RESUELTO'">
           <label class="input-lbl">Escribe la respuesta o solución brindada al cliente:</label>
           <textarea [(ngModel)]="respuestaResolucion" rows="4" class="solution-textarea"
             placeholder="Describe la solución aplicada, detalles del reemplazo o atención prestada al cliente..."></textarea>
-          <button class="btn-resolve-ticket" (click)="resolverTicket()" [disabled]="guardandoResolucion || !respuestaResolucion.trim()">
+          <button class="btn-resolve-ticket" (click)="resolverTicket()"
+            [disabled]="guardandoResolucion || !respuestaResolucion.trim()">
             {{ guardandoResolucion ? 'Guardando solución...' : '✓ Dar Solución y Resolver Ticket' }}
           </button>
         </div>

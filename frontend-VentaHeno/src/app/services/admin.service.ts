@@ -60,7 +60,7 @@ export class AdminService {
     const usuario = this.getUsuario();
     if (usuario && usuario.activo === false) return false;
     const rol = (sessionStorage.getItem('rol') || '').toLowerCase();
-    return rol === 'gestortickets' || rol === 'admin';
+    return rol === 'gestortickets' || this.isAdminLoggedIn();
   }
 
   isAsesorLoggedIn(): boolean {

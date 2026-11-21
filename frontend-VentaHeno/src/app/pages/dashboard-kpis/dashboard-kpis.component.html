@@ -1,0 +1,456 @@
+<!-- HEADER INSTITUCIONAL AGROHENO -->
+<header class="admin-top-header">
+    <div class="admin-header-inner">
+        <div class="admin-header-left" style="display: flex; gap: 0.75rem; align-items: center;">
+            <button class="btn-admin-back" (click)="volver()">
+                ← {{ esAdmin ? 'Volver al Panel' : 'Volver a Tickets' }}
+            </button>
+            <button class="btn-admin-logout" (click)="cerrarSesion()">Cerrar Sesión 🔓</button>
+        </div>
+
+        <div class="admin-header-branding" (click)="volver()">
+            <img src="assets/Imagenes/Logo2.png" alt="AgroHeno Logo" class="admin-header-logo">
+            <div class="admin-brand-text">
+                <span class="brand-main">AgroHeno</span>
+                <span class="brand-sub">TABLERO DE KPIs Y GRÁFICOS</span>
+            </div>
+        </div>
+
+        <div class="admin-header-right">
+            <span class="admin-header-badge">
+                {{ esAdmin ? 'Administrador 🔒' : 'Gestor Tickets 📋' }}
+            </span>
+        </div>
+    </div>
+</header>
+
+<div class="kpi-page-container">
+    <!-- TÍTULO Y CONTROLES -->
+    <div class="kpi-header-row">
+        <div class="kpi-title-block">
+            <h1>Tablero de Indicadores (KPIs)</h1>
+            <p *ngIf="esAdmin">
+                Monitoreo integral de soporte posventa (SLA), ventas, riesgo financiero y salud de inventario
+            </p>
+            <p *ngIf="!esAdmin">
+                Monitoreo operativo de tickets posventa, cumplimiento SLA, carga por asesor y cobertura FAQ
+            </p>
+        </div>
+
+        <div class="kpi-actions-bar">
+            <div class="periodo-filter">
+                <label for="mesKpi">Periodo:</label>
+                <input id="mesKpi" type="month" [(ngModel)]="mesSeleccionado" (change)="cargarKpis()" class="input-mes">
+                <button *ngIf="mesSeleccionado" class="btn-link-clear" (click)="limpiarPeriodo()">Histórico</button>
+            </div>
+
+            <button class="btn-gold" (click)="exportarPdf()" [disabled]="cargando || !kpis">
+                Exportar PDF
+            </button>
+            <button class="btn-outline" (click)="cargarKpis()" [disabled]="cargando">
+                {{ cargando ? 'Actualizando...' : 'Actualizar' }}
+            </button>
+        </div>
+    </div>
+
+    <!-- PESTAÑAS POR ROL (Admin ve ambas, Gestor Tickets solo Soporte) -->
+    <div class="kpi-tabs" *ngIf="esAdmin">
+        <button class="kpi-tab-btn" [class.active]="vistaActiva === 'SOPORTE'" (click)="cambiarVista('SOPORTE')">
+            Soporte Posventa y SLA
+        </button>
+        <button class="kpi-tab-btn" [class.active]="vistaActiva === 'EJECUTIVO'" (click)="cambiarVista('EJECUTIVO')">
+            Analítica Ejecutiva (Ventas, Riesgo e Inventario)
+        </button>
+    </div>
+
+    <!-- ESTADO DE CARGA / ERROR -->
+    <div class="state-card" *ngIf="cargando">
+        <p>Calculando indicadores y generando gráficos en tiempo real...</p>
+    </div>
+
+    <div class="alert-error" *ngIf="error && !cargando">
+        <span>{{ error }}</span>
+        <button class="btn-outline" (click)="cargarKpis()">Reintentar</button>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 1: KPIs DE SOPORTE POSVENTA Y SLA (Admin + Gestor Tickets)    -->
+    <!-- ===================================================================== -->
+    <ng-container *ngIf="kpis && !cargando && (!esAdmin || vistaActiva === 'SOPORTE')">
+
+        <!-- TARJETAS PRINCIPALES -->
+        <div class="kpi-cards-grid">
+            <div class="kpi-card accent-olive">
+                <span class="kpi-label">Cumplimiento SLA</span>
+                <span class="kpi-value" [class.val-ok]="kpis.cumplimientoSlaPorcentaje >= 95"
+                    [class.val-warn]="kpis.cumplimientoSlaPorcentaje < 95 && kpis.cumplimientoSlaPorcentaje >= 80"
+                    [class.val-danger]="kpis.cumplimientoSlaPorcentaje < 80">
+                    {{ kpis.cumplimientoSlaPorcentaje }}%
+                </span>
+                <span class="kpi-meta">Meta COBIT/ITIL: ≥ 95%</span>
+            </div>
+
+            <div class="kpi-card accent-gold">
+                <span class="kpi-label">Tiempo Medio Resolución (MTTR)</span>
+                <span class="kpi-value">{{ kpis.mttrHorasPromedio }} h</span>
+                <span class="kpi-meta">{{ kpis.ticketsResueltos }} de {{ kpis.totalTickets }} resueltos ({{
+                    kpis.tasaResolucionPorcentaje }}%)</span>
+            </div>
+
+            <div class="kpi-card" [class.accent-danger]="kpis.ticketsVencidosActivos > 0"
+                [class.accent-olive]="kpis.ticketsVencidosActivos === 0">
+                <span class="kpi-label">SLA Vencido / En Riesgo</span>
+                <span class="kpi-value" [class.val-danger]="kpis.ticketsVencidosActivos > 0">
+                    {{ kpis.ticketsVencidosActivos }}
+                    <small class="sub-val">/ {{ kpis.ticketsEnRiesgoActivos }} en riesgo</small>
+                </span>
+                <span class="kpi-meta">Tickets abiertos próximos a vencer (&lt; 4h)</span>
+            </div>
+
+            <div class="kpi-card accent-brown">
+                <span class="kpi-label">Backlog Sin Asignar</span>
+                <span class="kpi-value">{{ kpis.ticketsSinAsignar }}</span>
+                <span class="kpi-meta">{{ kpis.ticketsAbiertos }} tickets activos en total</span>
+            </div>
+
+            <div class="kpi-card accent-olive">
+                <span class="kpi-label">Trazabilidad con Pedido</span>
+                <span class="kpi-value">{{ kpis.tasaTrazabilidadFacturaPorcentaje }}%</span>
+                <span class="kpi-meta">Evidencia fotográfica: {{ kpis.tasaEvidenciaGraficaPorcentaje }}%</span>
+            </div>
+        </div>
+
+        <!-- FILA DE GRÁFICOS 1: GAUGE SLA + DONUT CATEGORÍAS -->
+        <div class="charts-grid-2">
+            <!-- GRÁFICO 1: VELOCÍMETRO SLA + ESTADOS -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Salud del SLA y Ciclo de Vida</h3>
+                    <span class="chart-pill">Puntaje prioridad prom: {{ kpis.puntajePrioridadPromedio }}/100</span>
+                </div>
+
+                <div class="gauge-section">
+                    <svg viewBox="0 0 140 85" class="gauge-svg">
+                        <path d="M 16 70 A 54 54 0 0 1 124 70" fill="none" stroke="#edf2f7" stroke-width="14"
+                            stroke-linecap="round" />
+                        <path d="M 16 70 A 54 54 0 0 1 124 70" fill="none"
+                            [attr.stroke]="kpis.cumplimientoSlaPorcentaje >= 95 ? '#036c39' : (kpis.cumplimientoSlaPorcentaje >= 80 ? '#cca243' : '#e53e3e')"
+                            stroke-width="14" stroke-linecap="round" [attr.stroke-dasharray]="169.65"
+                            [attr.stroke-dashoffset]="getGaugeOffset(kpis.cumplimientoSlaPorcentaje)" />
+                        <text x="70" y="56" text-anchor="middle" class="gauge-val">{{ kpis.cumplimientoSlaPorcentaje
+                            }}%</text>
+                        <text x="70" y="72" text-anchor="middle" class="gauge-sub">Cumplimiento SLA</text>
+                    </svg>
+
+                    <div class="estados-bars">
+                        <div class="bar-row" *ngFor="let est of kpis.ticketsPorEstado">
+                            <div class="bar-label-row">
+                                <span>{{ formatearEtiqueta(est.etiqueta) }}</span>
+                                <strong>{{ est.cantidad }} ({{ est.porcentaje }}%)</strong>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill" [style.width.%]="est.porcentaje"
+                                    [style.background]="getColorEstado(est.etiqueta)"></div>
+                            </div>
+                        </div>
+                        <p class="empty-msg" *ngIf="!kpis.ticketsPorEstado.length">Sin tickets en el periodo.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRÁFICO 2: DONUT CAUSAS RAÍZ (CATEGORÍAS) -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Distribución de Causas Raíz por Categoría</h3>
+                    <span class="chart-pill">Total: {{ kpis.totalTickets }}</span>
+                </div>
+
+                <div class="donut-layout" *ngIf="segmentosCategoria.length; else sinDatosCat">
+                    <svg viewBox="0 0 160 160" class="donut-svg">
+                        <circle cx="80" cy="80" r="62" fill="none" stroke="#f1f5f9" stroke-width="22"></circle>
+                        <circle *ngFor="let seg of segmentosCategoria" cx="80" cy="80" r="62" fill="none"
+                            [attr.stroke]="seg.color" stroke-width="22" [attr.stroke-dasharray]="seg.dashArray"
+                            [attr.stroke-dashoffset]="seg.dashOffset" transform="rotate(-90 80 80)">
+                            <title>{{ seg.etiqueta }}: {{ seg.cantidad }} ({{ seg.porcentaje }}%)</title>
+                        </circle>
+                        <text x="80" y="76" text-anchor="middle" class="donut-total">{{ kpis.totalTickets }}</text>
+                        <text x="80" y="93" text-anchor="middle" class="donut-sub">Tickets</text>
+                    </svg>
+
+                    <div class="donut-legend">
+                        <div class="legend-item" *ngFor="let seg of segmentosCategoria">
+                            <span class="legend-dot" [style.background]="seg.color"></span>
+                            <span class="legend-name">{{ seg.etiqueta }}</span>
+                            <strong class="legend-val">{{ seg.cantidad }} ({{ seg.porcentaje }}%)</strong>
+                        </div>
+                    </div>
+                </div>
+                <ng-template #sinDatosCat>
+                    <p class="empty-msg">No hay tickets registrados en este periodo.</p>
+                </ng-template>
+            </div>
+        </div>
+
+        <!-- FILA DE GRÁFICOS 2: MTTR VS META SLA POR PRIORIDAD + COBERTURA FAQ -->
+        <div class="charts-grid-2">
+            <!-- GRÁFICO 3: BARRAS PRIORIDAD -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Desempeño por Prioridad (MTTR vs Meta SLA)</h3>
+                    <span class="chart-pill">Horas reales / límite</span>
+                </div>
+
+                <div class="prio-list">
+                    <div class="prio-row" *ngFor="let p of kpis.kpisPorPrioridad">
+                        <div class="prio-head">
+                            <span class="prio-badge" [style.background]="getColorPrioridad(p.prioridad)">{{ p.prioridad
+                                }}</span>
+                            <span class="prio-stats">
+                                <strong>{{ p.total }}</strong> casos ({{ p.abiertos }} abiertos) ·
+                                MTTR: <strong>{{ p.mttrHoras }}h</strong> / Meta {{ p.metaSlaHoras }}h
+                            </span>
+                            <span class="prio-sla" [class.val-danger]="p.cumplimientoSlaPorcentaje < 90">
+                                SLA {{ p.cumplimientoSlaPorcentaje }}%
+                            </span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" [style.width.%]="getPorcentajeBarra(p.mttrHoras, p.metaSlaHoras)"
+                                [style.background]="p.mttrHoras > p.metaSlaHoras ? '#e53e3e' : getColorPrioridad(p.prioridad)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRÁFICO 4: COBERTURA FAQ VS TICKETS -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Cobertura de Preguntas Frecuentes vs Tickets</h3>
+                    <div class="mini-legend">
+                        <span><i class="dot-olive"></i> FAQs Activas</span>
+                        <span><i class="dot-gold"></i> Tickets</span>
+                    </div>
+                </div>
+
+                <div class="faq-bars">
+                    <div class="faq-row" *ngFor="let c of kpis.coberturaFaq">
+                        <div class="faq-cat">{{ formatearEtiqueta(c.categoria) }}</div>
+                        <div class="dual-bars">
+                            <div class="dual-line">
+                                <div class="bar-track small">
+                                    <div class="bar-fill olive"
+                                        [style.width.%]="getPorcentajeBarra(c.faqsActivas, getMaxFaqOTickets())"></div>
+                                </div>
+                                <span class="dual-num">{{ c.faqsActivas }} FAQs</span>
+                            </div>
+                            <div class="dual-line">
+                                <div class="bar-track small">
+                                    <div class="bar-fill gold"
+                                        [style.width.%]="getPorcentajeBarra(c.ticketsEnCategoria, getMaxFaqOTickets())">
+                                    </div>
+                                </div>
+                                <span class="dual-num">{{ c.ticketsEnCategoria }} Tkts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA DE RENDIMIENTO POR ASESOR -->
+        <div class="chart-card full-width">
+            <div class="chart-header">
+                <h3>Rendimiento y Carga Operativa por Asesor</h3>
+                <span class="chart-pill">{{ kpis.rendimientoAsesores.length }} asesores con casos</span>
+            </div>
+
+            <div class="table-wrap" *ngIf="kpis.rendimientoAsesores.length; else sinAsesores">
+                <table class="kpi-table">
+                    <thead>
+                        <tr>
+                            <th>Asesor</th>
+                            <th>Cédula</th>
+                            <th>Activos Asignados</th>
+                            <th>Resueltos</th>
+                            <th>MTTR Promedio</th>
+                            <th>Cumplimiento SLA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let a of kpis.rendimientoAsesores">
+                            <td><strong>{{ a.nombre }}</strong></td>
+                            <td>{{ a.cedula }}</td>
+                            <td><span class="chip-gold">{{ a.asignadosActivos }}</span></td>
+                            <td><span class="chip-olive">{{ a.resueltos }}</span></td>
+                            <td>{{ a.mttrHoras }} h</td>
+                            <td>
+                                <div class="inline-progress">
+                                    <div class="bar-track small">
+                                        <div class="bar-fill" [style.width.%]="a.cumplimientoSlaPorcentaje"
+                                            [style.background]="a.cumplimientoSlaPorcentaje >= 90 ? '#036c39' : '#cca243'">
+                                        </div>
+                                    </div>
+                                    <strong>{{ a.cumplimientoSlaPorcentaje }}%</strong>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <ng-template #sinAsesores>
+                <p class="empty-msg">Aún no hay tickets asignados a asesores en este periodo.</p>
+            </ng-template>
+        </div>
+    </ng-container>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 2: ANALÍTICA EJECUTIVA (EXCLUSIVA DE ADMINISTRADOR)           -->
+    <!-- ===================================================================== -->
+    <ng-container *ngIf="kpis && !cargando && esAdmin && vistaActiva === 'EJECUTIVO'">
+
+        <!-- TARJETAS FINANCIERAS Y COMERCIALES -->
+        <div class="kpi-cards-grid">
+            <div class="kpi-card accent-olive">
+                <span class="kpi-label">Ingresos Totales</span>
+                <span class="kpi-value val-money">{{ (kpis.ingresosTotales || 0) |
+                    currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                <span class="kpi-meta">{{ kpis.totalFacturas || 0 }} facturas · AOV {{ (kpis.ticketPromedioVenta || 0) |
+                    currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+            </div>
+
+            <div class="kpi-card" [class.accent-danger]="(kpis.tasaReclamosSobreVentasPorcentaje || 0) >= 5"
+                [class.accent-olive]="(kpis.tasaReclamosSobreVentasPorcentaje || 0) < 5">
+                <span class="kpi-label">Tasa Reclamos / Ventas</span>
+                <span class="kpi-value" [class.val-danger]="(kpis.tasaReclamosSobreVentasPorcentaje || 0) >= 5">
+                    {{ kpis.tasaReclamosSobreVentasPorcentaje || 0 }}%
+                </span>
+                <span class="kpi-meta">Meta legal / comercial: &lt; 5%</span>
+            </div>
+
+            <div class="kpi-card accent-danger">
+                <span class="kpi-label">Ingresos en Riesgo</span>
+                <span class="kpi-value val-money val-danger">{{ (kpis.ingresosEnRiesgo || 0) |
+                    currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                <span class="kpi-meta">Facturas con garantía o ticket abierto</span>
+            </div>
+
+            <div class="kpi-card accent-gold">
+                <span class="kpi-label">Recurrencia de Clientes</span>
+                <span class="kpi-value">{{ kpis.tasaRecurrenciaClientesPorcentaje || 0 }}%</span>
+                <span class="kpi-meta">Clientes con más de 1 compra</span>
+            </div>
+
+            <div class="kpi-card accent-brown">
+                <span class="kpi-label">Salud de Inventario</span>
+                <span class="kpi-value">{{ kpis.productosAgotados || 0 }} <small class="sub-val">/ {{
+                        kpis.totalProductosHeno || 0 }} agotados</small></span>
+                <span class="kpi-meta">Stock activo: {{ (kpis.valorTotalInventario || 0) |
+                    currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+            </div>
+        </div>
+
+        <!-- GRÁFICO 5: EVOLUCIÓN MENSUAL VENTAS VS TICKETS (BARRAS VERTICALES) -->
+        <div class="chart-card full-width">
+            <div class="chart-header">
+                <h3>Evolución Últimos 6 Meses: Ingresos por Ventas vs. Tickets</h3>
+                <div class="mini-legend">
+                    <span><i class="dot-olive"></i> Ingresos ($ COP)</span>
+                    <span><i class="dot-gold"></i> Tickets Radicados</span>
+                </div>
+            </div>
+
+            <div class="vchart-container" *ngIf="kpis.evolucionMensual?.length">
+                <div class="vchart-col" *ngFor="let m of kpis.evolucionMensual">
+                    <div class="vchart-bars">
+                        <div class="vbar olive"
+                            [style.height.%]="getPorcentajeBarra(m.ingresos, getMaxIngresosMensual())"
+                            [title]="'Ingresos: $' + m.ingresos.toLocaleString('es-CO') + ' (' + m.totalFacturas + ' facturas)'">
+                            <span class="vbar-tip">{{ m.ingresos >= 1000000 ? ((m.ingresos / 1000000) | number:'1.1-1')
+                                + 'M' : ((m.ingresos / 1000) | number:'1.0-0') + 'K' }}</span>
+                        </div>
+                        <div class="vbar gold"
+                            [style.height.%]="getPorcentajeBarra(m.totalTickets, getMaxTicketsMensual())"
+                            [title]="'Tickets: ' + m.totalTickets">
+                            <span class="vbar-tip">{{ m.totalTickets }}</span>
+                        </div>
+                    </div>
+                    <span class="vchart-label">{{ m.etiquetaMes }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILA DE GRÁFICOS EJECUTIVOS: MIX B2B/B2C + FALLAS POR PRODUCTO/ESPECIE -->
+        <div class="charts-grid-2">
+            <!-- GRÁFICO 6: DONUT MIX MAYORISTA VS MINORISTA -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Mix de Ingresos: Mayoristas (B2B) vs. Minoristas (B2C)</h3>
+                    <span class="chart-pill">Umbral B2B: $1.000.000</span>
+                </div>
+
+                <div class="donut-layout">
+                    <svg viewBox="0 0 160 160" class="donut-svg">
+                        <circle cx="80" cy="80" r="62" fill="none" stroke="#f1f5f9" stroke-width="22"></circle>
+                        <circle *ngFor="let seg of segmentosMixVentas" cx="80" cy="80" r="62" fill="none"
+                            [attr.stroke]="seg.color" stroke-width="22" [attr.stroke-dasharray]="seg.dashArray"
+                            [attr.stroke-dashoffset]="seg.dashOffset" transform="rotate(-90 80 80)">
+                            <title>{{ seg.etiqueta }}: {{ seg.porcentaje }}%</title>
+                        </circle>
+                        <text x="80" y="76" text-anchor="middle" class="donut-total">{{ kpis.totalFacturas || 0
+                            }}</text>
+                        <text x="80" y="93" text-anchor="middle" class="donut-sub">Pedidos</text>
+                    </svg>
+
+                    <div class="donut-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: #036c39"></span>
+                            <span class="legend-name">B2B Mayoristas ({{ kpis.facturasMayoristas || 0 }})</span>
+                            <strong class="legend-val">{{ (kpis.ingresosMayoristas || 0) |
+                                currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: #cca243"></span>
+                            <span class="legend-name">B2C Minoristas ({{ kpis.facturasMinoristas || 0 }})</span>
+                            <strong class="legend-val">{{ (kpis.ingresosMinoristas || 0) |
+                                currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRÁFICO 7: RANKING DE FALLAS POR TIPO DE HENO Y ESPECIE -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Reclamos por Tipo de Heno y Especie Animal</h3>
+                    <span class="chart-pill">Cruce Ticket × Factura</span>
+                </div>
+
+                <div class="sub-section-title">Por Especie Animal</div>
+                <div class="bar-row" *ngFor="let a of kpis.fallasPorAnimal">
+                    <div class="bar-label-row">
+                        <span>{{ a.etiqueta }}</span>
+                        <strong>{{ a.cantidad }} ({{ a.porcentaje }}%)</strong>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill olive" [style.width.%]="a.porcentaje"></div>
+                    </div>
+                </div>
+                <p class="empty-msg" *ngIf="!kpis.fallasPorAnimal?.length">Sin reclamos asociados a facturas de
+                    animales.</p>
+
+                <div class="sub-section-title" style="margin-top: 1.25rem;">Top Pacas de Heno con Reclamos</div>
+                <div class="bar-row" *ngFor="let h of (kpis.fallasPorTipoHeno || []).slice(0, 5)">
+                    <div class="bar-label-row">
+                        <span>{{ h.etiqueta }}</span>
+                        <strong>{{ h.cantidad }} ({{ h.porcentaje }}%)</strong>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill gold" [style.width.%]="h.porcentaje"></div>
+                    </div>
+                </div>
+                <p class="empty-msg" *ngIf="!kpis.fallasPorTipoHeno?.length">Sin reclamos asociados a productos
+                    específicos.</p>
+            </div>
+        </div>
+    </ng-container>
+</div>

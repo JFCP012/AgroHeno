@@ -83,18 +83,12 @@ export class GestionTicketsComponent implements OnInit {
   calcularKpis(): void {
     this.totalTickets = this.tickets.length;
     this.totalRadicados = this.tickets.filter(t => (t.estadoTicket || '').toUpperCase() === 'RADICADO').length;
-    this.totalEnAtencion = this.tickets.filter(t => {
-      const e = (t.estadoTicket || '').toUpperCase();
-      return e === 'EN_ANALISIS' || e === 'EN_CAMPO';
-    }).length;
-    this.totalResueltos = this.tickets.filter(t => {
-      const e = (t.estadoTicket || '').toUpperCase();
-      return e === 'RESUELTO' || e === 'CERRADO';
-    }).length;
+    this.totalEnAtencion = this.tickets.filter(t => (t.estadoTicket || '').toUpperCase() === 'EN_ANALISIS').length;
+    this.totalResueltos = this.tickets.filter(t => (t.estadoTicket || '').toUpperCase() === 'RESUELTO').length;
     this.totalCriticos = this.tickets.filter(t => {
       const p = (t.prioridad || '').toUpperCase();
       const e = (t.estadoTicket || '').toUpperCase();
-      return p === 'CRITICA' && e !== 'RESUELTO' && e !== 'CERRADO';
+      return p === 'CRITICA' && e !== 'RESUELTO';
     }).length;
   }
 
@@ -255,7 +249,7 @@ export class GestionTicketsComponent implements OnInit {
   esSlaVencido(ticket: Ticket): boolean {
     if (!ticket.fechaLimite) return false;
     const est = (ticket.estadoTicket || '').toUpperCase();
-    if (est === 'RESUELTO' || est === 'CERRADO') return false;
+    if (est === 'RESUELTO') return false;
 
     const limit = this.parseFecha(ticket.fechaLimite);
     if (!limit) return false;
@@ -265,7 +259,7 @@ export class GestionTicketsComponent implements OnInit {
   esSlaUrgente(ticket: Ticket): boolean {
     if (!ticket.fechaLimite) return false;
     const est = (ticket.estadoTicket || '').toUpperCase();
-    if (est === 'RESUELTO' || est === 'CERRADO') return false;
+    if (est === 'RESUELTO') return false;
 
     const limit = this.parseFecha(ticket.fechaLimite);
     if (!limit) return false;
@@ -303,7 +297,7 @@ export class GestionTicketsComponent implements OnInit {
       return true;
     }
     const estado = (ticket.estadoTicket || '').toUpperCase();
-    return estado === 'EN_ANALISIS' || estado === 'EN_CAMPO' || estado === 'RESUELTO' || estado === 'CERRADO';
+    return estado === 'EN_ANALISIS' || estado === 'RESUELTO';
   }
 
   abrirModalAsignar(ticket: Ticket, event?: Event): void {
@@ -435,15 +429,17 @@ export class GestionTicketsComponent implements OnInit {
     this.router.navigate(['/gestion-preguntas-frecuentes']);
   }
 
-  // Clases CSS dinámicas para badges
+  irADashboardKpis(): void {
+    this.router.navigate(['/dashboard-kpis']);
+  }
+
+  // Clases CSS dinámicas para badges (3 estados oficiales)
   getEstadoClass(estado?: string): string {
     const e = (estado || '').toUpperCase();
     switch (e) {
       case 'RADICADO': return 'badge-radicado';
       case 'EN_ANALISIS': return 'badge-analisis';
-      case 'EN_CAMPO': return 'badge-campo';
       case 'RESUELTO': return 'badge-resuelto';
-      case 'CERRADO': return 'badge-cerrado';
       default: return 'badge-default';
     }
   }

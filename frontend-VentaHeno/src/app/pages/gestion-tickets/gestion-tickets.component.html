@@ -29,6 +29,9 @@
       <p>Supervisión, atención técnica y resolución de requerimientos de soporte</p>
     </div>
     <div class="page-title-actions">
+      <button class="btn-kpi-redirect" (click)="irADashboardKpis()" title="Ver Tablero de Indicadores y KPIs">
+        <span>Tablero de Indicadores</span>
+      </button>
       <button class="btn-faq-redirect" (click)="irAPreguntasFrecuentes()" title="Gestionar Base de Conocimiento y Preguntas Frecuentes">
         <span>+ Preguntas Frecuentes</span>
       </button>
@@ -53,7 +56,7 @@
     <div class="metric-divider"></div>
 
     <div class="metric-item">
-      <span class="metric-label">En Atención</span>
+      <span class="metric-label">En Análisis</span>
       <span class="metric-val">{{ totalEnAtencion }}</span>
     </div>
     <div class="metric-divider"></div>
@@ -96,9 +99,7 @@
           <option value="TODOS">Todos</option>
           <option value="RADICADO">Radicado</option>
           <option value="EN_ANALISIS">En Análisis</option>
-          <option value="EN_CAMPO">En Campo</option>
           <option value="RESUELTO">Resuelto</option>
-          <option value="CERRADO">Cerrado</option>
         </select>
       </div>
 

@@ -19,9 +19,7 @@ export type PrioridadTicket =
 export type EstadoTicket =
     | 'RADICADO'
     | 'EN_ANALISIS'
-    | 'EN_CAMPO'
     | 'RESUELTO'
-    | 'CERRADO'
     | string;
 
 export interface Ticket {

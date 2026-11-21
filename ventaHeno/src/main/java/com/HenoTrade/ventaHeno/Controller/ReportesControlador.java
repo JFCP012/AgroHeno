@@ -20,6 +20,8 @@ public class ReportesControlador {
 
     @Autowired
     private FacturaServise facturaServise;
+    @Autowired
+    private com.HenoTrade.ventaHeno.service.KpiService kpiService;
 
     @GetMapping("/ventasPorMes")
     public ReporteVentaMensualDTO ventasPorMes(@RequestParam int anio, @RequestParam int mes) {
@@ -40,4 +42,13 @@ public class ReportesControlador {
     public ReporteVentaClienteDTO ventasPorCliente(@RequestParam String cedula) {
         return facturaServise.generarReportePorCliente(cedula);
     }
+
+    @GetMapping("/kpis")
+    public com.HenoTrade.ventaHeno.dto.DashboardKpisDTO obtenerKpis(
+            @RequestParam(required = false) Integer anio,
+            @RequestParam(required = false) Integer mes,
+            @RequestParam(defaultValue = "false") boolean soloSoporte) {
+        return kpiService.obtenerDashboardKpis(anio, mes, soloSoporte);
+    }
+
 }

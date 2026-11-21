@@ -455,9 +455,7 @@
   border: 1px solid rgba(204, 162, 67, 0.45);
 }
 .badge-analisis { background: #faf5ff; color: #6b21a8; }
-.badge-campo { background: #fffbeb; color: #92400e; }
 .badge-resuelto { background: #f0fdf4; color: #15803d; }
-.badge-cerrado { background: #f8fafc; color: #64748b; }
 .badge-default { background: #f8fafc; color: #64748b; }
 
 /* FECHAS / SLA */

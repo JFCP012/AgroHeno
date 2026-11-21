@@ -21,6 +21,7 @@ import { asesorTicketsGuard } from './guards/asesor-tickets.guard';
 import { CrearUsuarioAdminComponent } from './pages/crear-usuario-admin/crear-usuario-admin.component';
 import { GestionPreguntasFrecuentesComponent } from './pages/gestion-preguntas-frecuentes/gestion-preguntas-frecuentes.component';
 import { PreguntasFrecuentesComponent } from './pages/preguntas-frecuentes/preguntas-frecuentes.component';
+import { DashboardKpisComponent } from './pages/dashboard-kpis/dashboard-kpis.component';
 
 export const routes: Routes = [
     { path: '', component: ProductoComponent },
@@ -46,4 +47,5 @@ export const routes: Routes = [
     { path: 'reportes-paca', component: ReportesPacaComponent, canActivate: [adminGuard] },
     { path: 'reportes-cliente', component: ReportesClienteComponent, canActivate: [adminGuard] },
     { path: 'gestion-henos', component: GestionHenosComponent, canActivate: [adminGuard] },
+    { path: 'dashboard-kpis', component: DashboardKpisComponent, canActivate: [gestorTicketsGuard] },
 ];

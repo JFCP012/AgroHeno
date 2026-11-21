@@ -53,7 +53,7 @@ public class Ticket {
     private Integer puntajePrioridad = 0;
 
     @Column(name = "estado_ticket", nullable = false, length = 30)
-    private String estadoTicket; // RADICADO, EN_ANALISIS, EN_CAMPO, RESUELTO, CERRADO
+    private String estadoTicket; // RADICADO, EN_ANALISIS, RESUELTO
 
     @CreationTimestamp
     @Column(name = "fecha_inicio", nullable = false, updatable = false)

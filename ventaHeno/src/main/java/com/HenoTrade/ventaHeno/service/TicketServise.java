@@ -56,10 +56,8 @@ public class TicketServise {
         // 1. Fecha de inicio
         ticket.setFechaInicio(ahora);
 
-        // 2. Estado inicial por defecto
-        if (ticket.getEstadoTicket() == null || ticket.getEstadoTicket().trim().isEmpty()) {
-            ticket.setEstadoTicket("RADICADO");
-        }
+        // 2. Estado inicial único permitido al radicar: RADICADO
+        ticket.setEstadoTicket("RADICADO");
 
         // 3. Generar Código de Radicado Único (Ej: TKT-2026-X8F21A)
         if (ticket.getCodigoRadicado() == null || ticket.getCodigoRadicado().trim().isEmpty()) {
@@ -310,7 +308,8 @@ public class TicketServise {
                 .orElseThrow(() -> new RuntimeException("Técnico no encontrado con cédula: " + cedulaTecnico));
 
         if (tecnico.getActivo() != null && !tecnico.getActivo()) {
-            throw new IllegalStateException("El asesor seleccionado (" + tecnico.getNombre() + ") se encuentra inactivo y no puede ser asignado.");
+            throw new IllegalStateException("El asesor seleccionado (" + tecnico.getNombre()
+                    + ") se encuentra inactivo y no puede ser asignado.");
         }
 
         ticket.setTecnicoAsignado(tecnico);
@@ -340,9 +339,14 @@ public class TicketServise {
         Ticket ticket = this.ticketRepositorio.findById(idTicket)
                 .orElseThrow(() -> new RuntimeException("Ticket no encontrado con id: " + idTicket));
 
+        LocalDateTime ahora = LocalDateTime.now();
         ticket.setRespuesta(respuesta);
-        ticket.setFechaFin(LocalDateTime.now());
+        ticket.setFechaFin(ahora);
         ticket.setEstadoTicket("RESUELTO");
+
+        if (ticket.getFechaLimite() != null) {
+            ticket.setSlaVencido(ahora.isAfter(ticket.getFechaLimite()));
+        }
         Ticket ticketGuardado = this.ticketRepositorio.save(ticket);
 
         // Enviar correo de notificación al cliente informando la solución del ticket
