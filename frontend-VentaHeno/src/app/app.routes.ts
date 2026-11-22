@@ -1,51 +1,111 @@
 import { Routes } from '@angular/router';
 import { ProductoComponent } from './pages/producto/producto.component';
-import { CrearProducto } from './pages/crear-producto/crear-producto';
-import { DetalleProducto } from './pages/detalle-producto/detalle-producto';
-import { CarritoComponent } from './pages/carrito/carrito.component';
-import { Factura } from './pages/factura/factura';
-import { AdminComponent } from './pages/admin/admin.component';
-import { ReportesMesComponent } from './pages/reportes-mes/reportes-mes.component';
 import { adminGuard } from './guards/admin.guard';
-import { ReportesAnimalComponent } from './pages/reportes-animal/reportes-animal.component';
-import { ReportesPacaComponent } from './pages/reportes-paca/reportes-paca.component';
-import { GestionHenosComponent } from './pages/gestion-henos/gestion-henos.component';
-import { CrearCliente } from './pages/crear-cliente/crear-cliente';
-import { ReportesClienteComponent } from './pages/reportes-cliente/reportes-cliente.component';
-import { PerfilCliente } from './pages/perfil-cliente/perfil-cliente';
-import { CrearTicketComponent } from './pages/crearTicket/crearTicket';
-import { GestionTicketsComponent } from './pages/gestion-tickets/gestion-tickets.component';
 import { gestorTicketsGuard } from './guards/gestor-tickets.guard';
-import { AsesorTicketsComponent } from './pages/asesor-tickets/asesor-tickets.component';
 import { asesorTicketsGuard } from './guards/asesor-tickets.guard';
-import { CrearUsuarioAdminComponent } from './pages/crear-usuario-admin/crear-usuario-admin.component';
-import { GestionPreguntasFrecuentesComponent } from './pages/gestion-preguntas-frecuentes/gestion-preguntas-frecuentes.component';
-import { PreguntasFrecuentesComponent } from './pages/preguntas-frecuentes/preguntas-frecuentes.component';
-import { DashboardKpisComponent } from './pages/dashboard-kpis/dashboard-kpis.component';
 
 export const routes: Routes = [
     { path: '', component: ProductoComponent },
     { path: 'producto', component: ProductoComponent },
-    { path: 'crear-producto', component: CrearProducto, canActivate: [adminGuard] },
-    { path: 'detalle-producto/:id', component: DetalleProducto },
-    { path: 'carrito', component: CarritoComponent },
-    { path: 'factura', component: Factura },
-    { path: 'crear-cliente', component: CrearCliente },
-    { path: 'perfil-cliente', component: PerfilCliente },
-    { path: 'crearTicket', component: CrearTicketComponent },
-    { path: 'crear-ticket', component: CrearTicketComponent },
-    { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
-    { path: 'crear-usuario-admin', component: CrearUsuarioAdminComponent, canActivate: [adminGuard] },
-    { path: 'gestion-usuarios', component: CrearUsuarioAdminComponent, canActivate: [adminGuard] },
-    { path: 'gestion-tickets', component: GestionTicketsComponent, canActivate: [gestorTicketsGuard] },
-    { path: 'gestion-preguntas-frecuentes', component: GestionPreguntasFrecuentesComponent, canActivate: [gestorTicketsGuard] },
-    { path: 'preguntas-frecuentes', component: PreguntasFrecuentesComponent },
-    { path: 'ayuda', component: PreguntasFrecuentesComponent },
-    { path: 'asesor-tickets', component: AsesorTicketsComponent, canActivate: [asesorTicketsGuard] },
-    { path: 'reportes-mes', component: ReportesMesComponent, canActivate: [adminGuard] },
-    { path: 'reportes-animal', component: ReportesAnimalComponent, canActivate: [adminGuard] },
-    { path: 'reportes-paca', component: ReportesPacaComponent, canActivate: [adminGuard] },
-    { path: 'reportes-cliente', component: ReportesClienteComponent, canActivate: [adminGuard] },
-    { path: 'gestion-henos', component: GestionHenosComponent, canActivate: [adminGuard] },
-    { path: 'dashboard-kpis', component: DashboardKpisComponent, canActivate: [gestorTicketsGuard] },
+    {
+        path: 'crear-producto',
+        loadComponent: () => import('./pages/crear-producto/crear-producto').then(m => m.CrearProducto),
+        canActivate: [adminGuard]
+    },
+    {
+        path: 'detalle-producto/:id',
+        loadComponent: () => import('./pages/detalle-producto/detalle-producto').then(m => m.DetalleProducto)
+    },
+    {
+        path: 'carrito',
+        loadComponent: () => import('./pages/carrito/carrito.component').then(m => m.CarritoComponent)
+    },
+    {
+        path: 'factura',
+        loadComponent: () => import('./pages/factura/factura').then(m => m.Factura)
+    },
+    {
+        path: 'crear-cliente',
+        loadComponent: () => import('./pages/crear-cliente/crear-cliente').then(m => m.CrearCliente)
+    },
+    {
+        path: 'perfil-cliente',
+        loadComponent: () => import('./pages/perfil-cliente/perfil-cliente').then(m => m.PerfilCliente)
+    },
+    {
+        path: 'crearTicket',
+        loadComponent: () => import('./pages/crearTicket/crearTicket').then(m => m.CrearTicketComponent)
+    },
+    {
+        path: 'crear-ticket',
+        loadComponent: () => import('./pages/crearTicket/crearTicket').then(m => m.CrearTicketComponent)
+    },
+    {
+        path: 'admin',
+        loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent),
+        canActivate: [adminGuard]
+    },
+    {
+        path: 'crear-usuario-admin',
+        loadComponent: () => import('./pages/crear-usuario-admin/crear-usuario-admin.component').then(m => m.CrearUsuarioAdminComponent),
+        canActivate: [adminGuard]
+    },
+    {
+        path: 'gestion-usuarios',
+        loadComponent: () => import('./pages/crear-usuario-admin/crear-usuario-admin.component').then(m => m.CrearUsuarioAdminComponent),
+        canActivate: [adminGuard]
+    },
+    {
+        path: 'gestion-tickets',
+        loadComponent: () => import('./pages/gestion-tickets/gestion-tickets.component').then(m => m.GestionTicketsComponent),
+        canActivate: [gestorTicketsGuard]
+    },
+    {
+        path: 'gestion-preguntas-frecuentes',
+        loadComponent: () => import('./pages/gestion-preguntas-frecuentes/gestion-preguntas-frecuentes.component').then(m => m.GestionPreguntasFrecuentesComponent),
+        canActivate: [gestorTicketsGuard]
+    },
+    {
+        path: 'preguntas-frecuentes',
+        loadComponent: () => import('./pages/preguntas-frecuentes/preguntas-frecuentes.component').then(m => m.PreguntasFrecuentesComponent)
+    },
+    {
+        path: 'ayuda',
+        loadComponent: () => import('./pages/preguntas-frecuentes/preguntas-frecuentes.component').then(m => m.PreguntasFrecuentesComponent)
+    },
+    {
+        path: 'asesor-tickets',
+        loadComponent: () => import('./pages/asesor-tickets/asesor-tickets.component').then(m => m.AsesorTicketsComponent),
+        canActivate: [asesorTicketsGuard]
+    },
+    {
+        path: 'reportes-mes',
+        loadComponent: () => import('./pages/reportes-mes/reportes-mes.component').then(m => m.ReportesMesComponent),
+        canActivate: [adminGuard]
+    },
+    {
+        path: 'reportes-animal',
+        loadComponent: () => import('./pages/reportes-animal/reportes-animal.component').then(m => m.ReportesAnimalComponent),
+        canActivate: [adminGuard]
+    },
+    {
+        path: 'reportes-paca',
+        loadComponent: () => import('./pages/reportes-paca/reportes-paca.component').then(m => m.ReportesPacaComponent),
+        canActivate: [adminGuard]
+    },
+    {
+        path: 'reportes-cliente',
+        loadComponent: () => import('./pages/reportes-cliente/reportes-cliente.component').then(m => m.ReportesClienteComponent),
+        canActivate: [adminGuard]
+    },
+    {
+        path: 'gestion-henos',
+        loadComponent: () => import('./pages/gestion-henos/gestion-henos.component').then(m => m.GestionHenosComponent),
+        canActivate: [adminGuard]
+    },
+    {
+        path: 'dashboard-kpis',
+        loadComponent: () => import('./pages/dashboard-kpis/dashboard-kpis.component').then(m => m.DashboardKpisComponent),
+        canActivate: [gestorTicketsGuard]
+    },
 ];

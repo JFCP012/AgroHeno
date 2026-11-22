@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.HenoTrade.ventaHeno.Entity.Ticket;
@@ -31,6 +32,7 @@ public class EmailService {
      * Si no hay configuración SMTP configurada o falla la conexión, la excepción se captura
      * para asegurar que la creación y persistencia del ticket NUNCA se interrumpa.
      */
+    @Async
     public void enviarNotificacionTicketRadicado(Ticket ticket, String correoDestino, String nombreCliente) {
         if (correoDestino == null || correoDestino.trim().isEmpty()) {
             log.info("Ticket {}: El cliente no tiene correo registrado. Se omite el envío.", ticket.getCodigoRadicado());
@@ -126,6 +128,7 @@ public class EmailService {
      * Envía un correo con diseño corporativo al cliente informando que su ticket
      * ha sido asignado a un asesor técnico para su atención y análisis.
      */
+    @Async
     public void enviarNotificacionAsesorAsignado(Ticket ticket, Usuario tecnico, String correoDestino, String nombreCliente) {
         if (correoDestino == null || correoDestino.trim().isEmpty()) {
             log.info("Ticket {}: El cliente no tiene correo registrado. Se omite el envío de asignación de asesor.", ticket.getCodigoRadicado());
@@ -219,6 +222,7 @@ public class EmailService {
      * Envía un correo con diseño corporativo al cliente informando que su ticket
      * ha sido resuelto y detallando la respuesta/solución brindada por el asesor.
      */
+    @Async
     public void enviarNotificacionTicketResuelto(Ticket ticket, String respuesta, String correoDestino, String nombreCliente) {
         if (correoDestino == null || correoDestino.trim().isEmpty()) {
             log.info("Ticket {}: El cliente no tiene correo registrado. Se omite el envío de ticket resuelto.", ticket.getCodigoRadicado());

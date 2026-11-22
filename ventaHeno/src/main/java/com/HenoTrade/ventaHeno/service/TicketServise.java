@@ -45,13 +45,13 @@ public class TicketServise {
     @Autowired
     private EmailService emailService;
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
+
     @Transactional
     public Ticket CrearTicket(String ticketJson, MultipartFile archivoImagen) throws IOException {
         LocalDateTime ahora = LocalDateTime.now();
-        // 1. Convertir JSON a objeto Java
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
-        Ticket ticket = objectMapper.readValue(ticketJson, Ticket.class);
+        // 1. Convertir JSON a objeto Java usando instancia compartida thread-safe
+        Ticket ticket = OBJECT_MAPPER.readValue(ticketJson, Ticket.class);
 
         // 1. Fecha de inicio
         ticket.setFechaInicio(ahora);

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ReportesService } from '../../services/reportes.service';
 import { ExcelExportService } from '../../services/excel-export.service';
+import { PdfUtilsService, LogoData } from '../../services/pdf-utils.service';
 import { ReporteVentaMensual } from '../../models/reporte-venta.model';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -19,6 +20,7 @@ export class ReportesMesComponent implements OnInit {
   private router = inject(Router);
   private reportesService = inject(ReportesService);
   private excelExportService = inject(ExcelExportService);
+  private pdfUtils = inject(PdfUtilsService);
   private cdr = inject(ChangeDetectorRef);
 
   mesSeleccionado: string = ''; // Formato esperado "YYYY-MM"
@@ -26,25 +28,10 @@ export class ReportesMesComponent implements OnInit {
   cargandoReporte: boolean = false;
   errorReporte: string | null = null;
 
-  private logoBase64: string = '';
-  private logoAspectRatio: number = 1.0;
+  private logoData: LogoData = { base64: '', aspectRatio: 1.0 };
 
   ngOnInit() {
-    this.cargarLogo();
-  }
-
-  private cargarLogo() {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0);
-      this.logoAspectRatio = img.width / img.height;
-      this.logoBase64 = canvas.toDataURL('image/png');
-    };
-    img.src = '/assets/Imagenes/Logo2.png';
+    this.pdfUtils.obtenerLogo().then(logo => { this.logoData = logo; });
   }
 
   // Variables de control para la paginación
@@ -110,27 +97,7 @@ export class ReportesMesComponent implements OnInit {
 
     try {
       const doc = new jsPDF();
-      doc.setFont("helvetica");
-
-      // Logo
-      if (this.logoBase64) {
-        const height = 20; 
-        const width = height * this.logoAspectRatio;
-        doc.addImage(this.logoBase64, 'PNG', 14, 10, width, height);
-        
-        doc.setFontSize(22);
-        doc.setTextColor(56, 161, 105);
-        doc.text("AgroHeno", 14 + width + 5, 24);
-      } else {
-        doc.setFontSize(22);
-        doc.setTextColor(56, 161, 105);
-        doc.text("AgroHeno", 14, 24);
-      }
-
-      // Línea separadora
-      doc.setDrawColor(56, 161, 105);
-      doc.setLineWidth(0.5);
-      doc.line(14, 35, 196, 35);
+      this.pdfUtils.dibujarEncabezado(doc, this.logoData);
 
       // Título
       doc.setFontSize(16);
@@ -167,19 +134,7 @@ export class ReportesMesComponent implements OnInit {
         columnStyles: { 4: { cellWidth: 50 } }
       });
 
-      const pageCount = (doc as any).internal.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(10);
-        doc.setTextColor(150);
-        const pageSize = doc.internal.pageSize;
-        const pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
-        const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
-        const text = "Fabricantes de heno";
-        const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-        const x = (pageWidth - textWidth) / 2;
-        doc.text(text, x, pageHeight - 10);
-      }
+      this.pdfUtils.dibujarPieDePagina(doc);
 
       doc.save(`Reporte_Mes_${this.reporteMensual.anio}_${this.reporteMensual.mes}_${Date.now()}.pdf`);
     } catch (e: any) {

@@ -92,8 +92,6 @@
       <div class="select-group">
         <label>Estado:</label>
         <select [(ngModel)]="filtroEstado"
-          (change)="onEstadoSelect($event)"
-          (input)="onEstadoSelect($event)"
           (ngModelChange)="onEstadoSelect($event)"
           class="minimal-select">
           <option value="TODOS">Todos</option>
@@ -106,8 +104,6 @@
       <div class="select-group">
         <label>Prioridad:</label>
         <select [(ngModel)]="filtroPrioridad"
-          (change)="onPrioridadSelect($event)"
-          (input)="onPrioridadSelect($event)"
           (ngModelChange)="onPrioridadSelect($event)"
           class="minimal-select">
           <option value="TODAS">Todas</option>
@@ -121,8 +117,6 @@
       <div class="select-group">
         <label>Categoría:</label>
         <select [(ngModel)]="filtroCategoria"
-          (change)="onCategoriaSelect($event)"
-          (input)="onCategoriaSelect($event)"
           (ngModelChange)="onCategoriaSelect($event)"
           class="minimal-select">
           <option value="TODAS">Todas</option>

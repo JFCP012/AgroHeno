@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,7 +13,7 @@ import { Ticket } from '../../models/ticket';
   templateUrl: './asesor-tickets.component.html',
   styleUrls: ['./asesor-tickets.component.css']
 })
-export class AsesorTicketsComponent implements OnInit {
+export class AsesorTicketsComponent implements OnInit, OnDestroy {
   private ticketService = inject(TicketService);
   private adminService = inject(AdminService);
   private router = inject(Router);
@@ -347,6 +347,12 @@ export class AsesorTicketsComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
   }
 
   cerrarSesion(): void {

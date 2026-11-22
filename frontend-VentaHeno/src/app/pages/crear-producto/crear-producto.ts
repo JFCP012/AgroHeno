@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { HenoService } from '../../services/heno.service';
 import { Heno } from '../../models/heno.model';
 
@@ -52,9 +53,11 @@ export class CrearProducto implements OnInit {
   }
 
   cargarHenoParaEditar(id: number) {
-    this.henoService.buscarPorId(id).subscribe({
-      next: (data) => {
-        // Robust Date format handling to yyyy-MM-dd
+    forkJoin({
+      heno: this.henoService.buscarPorId(id),
+      animalIds: this.henoService.buscarAnimales(id)
+    }).subscribe({
+      next: ({ heno: data, animalIds }) => {
         if (data.fechaEntrada) {
           if (Array.isArray(data.fechaEntrada)) {
             const [yyyy, mm, dd] = data.fechaEntrada;
@@ -75,18 +78,8 @@ export class CrearProducto implements OnInit {
 
         this.heno = data;
         this.imagenPreview = data.imagen || null;
+        this.idAnimales = animalIds || [];
         this.cdr.detectChanges();
-
-        // Cargar animales asociados
-        this.henoService.buscarAnimales(id).subscribe({
-          next: (animalIds) => {
-            this.idAnimales = animalIds;
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            console.error('Error al cargar animales destinados:', err);
-          }
-        });
       },
       error: (err) => {
         this.errorMsg = 'Error al cargar el producto para editar: ' + err.message;
@@ -97,7 +90,9 @@ export class CrearProducto implements OnInit {
 
   toggleAnimal(event: any, id: number) {
     if (event.target.checked) {
-      this.idAnimales.push(id);
+      if (!this.idAnimales.includes(id)) {
+        this.idAnimales.push(id);
+      }
     } else {
       this.idAnimales = this.idAnimales.filter(animalId => animalId !== id);
     }
@@ -108,10 +103,10 @@ export class CrearProducto implements OnInit {
     if (file) {
       this.imagen = file;
 
-      // Generate image preview
       const reader = new FileReader();
       reader.onload = () => {
         this.imagenPreview = reader.result;
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     }
@@ -136,10 +131,10 @@ export class CrearProducto implements OnInit {
 
     if (this.isEditMode && this.editHenoId) {
       this.henoService.editarHeno(this.editHenoId, this.heno, file, this.idAnimales).subscribe({
-        next: (heno) => {
-          console.log('Heno editado con éxito:', heno);
+        next: () => {
           this.successMsg = '¡Producto editado con éxito!';
           this.loading = false;
+          this.cdr.detectChanges();
           setTimeout(() => {
             this.volver();
           }, 1500);
@@ -148,6 +143,7 @@ export class CrearProducto implements OnInit {
           console.error('Error al editar heno:', err);
           this.errorMsg = 'Ocurrió un error al editar el producto. Por favor intente de nuevo.';
           this.loading = false;
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -157,10 +153,10 @@ export class CrearProducto implements OnInit {
         return;
       }
       this.henoService.crearHeno(this.heno, file, this.idAnimales).subscribe({
-        next: (heno) => {
-          console.log('Heno creado con éxito:', heno);
+        next: () => {
           this.successMsg = '¡Producto creado con éxito!';
           this.loading = false;
+          this.cdr.detectChanges();
           setTimeout(() => {
             this.volver();
           }, 1500);
@@ -169,6 +165,7 @@ export class CrearProducto implements OnInit {
           console.error('Error al crear heno:', err);
           this.errorMsg = 'Ocurrió un error al guardar el producto. Por favor intente de nuevo.';
           this.loading = false;
+          this.cdr.detectChanges();
         }
       });
     }

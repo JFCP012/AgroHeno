@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Heno } from '../models/heno.model';
 import { API_BASE_URL } from '../config/api.config';
@@ -17,7 +17,8 @@ export class HenoService {
   }
 
   buscarHenosPorTipo(nombre: string): Observable<Heno[]> {
-    return this.http.get<Heno[]>(`${this.apiUrl}/buscarPorTipo?nombre=${nombre}`);
+    const params = new HttpParams().set('nombre', nombre);
+    return this.http.get<Heno[]>(`${this.apiUrl}/buscarPorTipo`, { params });
   }
 
   crearHeno(heno: any, imagen: File, idAnimales?: number[]): Observable<Heno> {
@@ -38,7 +39,8 @@ export class HenoService {
   }
 
   buscarHenosPorNombre(nombreHeno: string): Observable<Heno[]> {
-    return this.http.get<Heno[]>(`${this.apiUrl}/buscarPorNombre?nombreHeno=${nombreHeno}`);
+    const params = new HttpParams().set('nombreHeno', nombreHeno);
+    return this.http.get<Heno[]>(`${this.apiUrl}/buscarPorNombre`, { params });
   }
 
   buscarPorId(id: number): Observable<Heno> {
