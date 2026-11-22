@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CarritoService } from './services/carrito.service';
 import { ClienteService } from './services/cliente.service';
+import { AdminService, Usuario } from './services/admin.service';
 import { filter } from 'rxjs/operators';
 import { Cliente } from './models/Cliente';
 
@@ -18,6 +19,7 @@ export class App implements OnInit {
   protected readonly title = signal('frontend-VentaHeno');
 
   clienteService = inject(ClienteService);
+  adminService = inject(AdminService);
   private router = inject(Router);
   carritoService = inject(CarritoService);
   private cdr = inject(ChangeDetectorRef);
@@ -26,6 +28,15 @@ export class App implements OnInit {
   mostrarLoginModal = false;
   cargandoLogin = false;
   clienteLogueado: Cliente | null = null;
+  usuarioAdminLogueado: Usuario | null = null;
+  mostrarAdminMenu = false;
+  mostrarEditarPerfilAdmin = false;
+  editAdminNombre: string = "";
+  editAdminImagen: File | null = null;
+  editAdminImagenPreview: string | null = null;
+  guardandoPerfilAdmin = false;
+  perfilAdminError: string = "";
+  perfilAdminExito: string = "";
   idC: string = "";
   claveC: string = "";
   loginErrorMsg: string = "";
@@ -33,18 +44,106 @@ export class App implements OnInit {
 
   ngOnInit() {
     this.cargarClienteLogueado();
+    this.cargarUsuarioAdminLogueado();
 
     // Escuchar activamente los eventos del Router para actualizar la exclusión de vistas y estado del cliente
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.cargarClienteLogueado();
+      this.cargarUsuarioAdminLogueado();
+      this.mostrarAdminMenu = false;
       this.actualizarEstadoExclusion(event.urlAfterRedirects || event.url);
       window.scrollTo(0, 0);
     });
 
     // Evaluar el estado de la ruta inicial
     this.actualizarEstadoExclusion(this.router.url);
+  }
+
+  private cargarUsuarioAdminLogueado() {
+    this.usuarioAdminLogueado = this.adminService.getUsuario();
+  }
+
+  toggleAdminMenu() {
+    this.mostrarAdminMenu = !this.mostrarAdminMenu;
+  }
+
+  cerrarSesionAdmin() {
+    this.mostrarAdminMenu = false;
+    this.adminService.logoutAdmin();
+    this.usuarioAdminLogueado = null;
+    this.router.navigate(['/producto']);
+  }
+
+  abrirEditarPerfilAdmin() {
+    if (!this.usuarioAdminLogueado) return;
+    this.mostrarAdminMenu = false;
+    this.editAdminNombre = this.usuarioAdminLogueado.nombre || "";
+    this.editAdminImagen = null;
+    this.editAdminImagenPreview = this.usuarioAdminLogueado.imagen || null;
+    this.perfilAdminError = "";
+    this.perfilAdminExito = "";
+    this.mostrarEditarPerfilAdmin = true;
+  }
+
+  cerrarEditarPerfilAdmin() {
+    if (this.editAdminImagenPreview && this.editAdminImagenPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(this.editAdminImagenPreview);
+    }
+    this.editAdminImagen = null;
+    this.editAdminImagenPreview = null;
+    this.perfilAdminError = "";
+    this.perfilAdminExito = "";
+    this.mostrarEditarPerfilAdmin = false;
+  }
+
+  onAdminFileSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (this.editAdminImagenPreview && this.editAdminImagenPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(this.editAdminImagenPreview);
+      }
+      this.editAdminImagen = file;
+      this.editAdminImagenPreview = URL.createObjectURL(file);
+      this.cdr.detectChanges();
+    }
+  }
+
+  guardarPerfilAdmin() {
+    if (!this.usuarioAdminLogueado || this.guardandoPerfilAdmin) return;
+    const nombreLimpio = (this.editAdminNombre || "").trim();
+    if (nombreLimpio.length < 3) {
+      this.perfilAdminError = "El nombre debe tener al menos 3 caracteres.";
+      return;
+    }
+
+    this.perfilAdminError = "";
+    this.perfilAdminExito = "";
+    this.guardandoPerfilAdmin = true;
+    this.cdr.detectChanges();
+
+    this.adminService.editarUsuario(
+      this.usuarioAdminLogueado.cedulaU,
+      { nombre: nombreLimpio },
+      this.editAdminImagen
+    ).subscribe({
+      next: (actualizado) => {
+        this.guardandoPerfilAdmin = false;
+        this.usuarioAdminLogueado = actualizado;
+        this.perfilAdminExito = "Perfil actualizado correctamente.";
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.cerrarEditarPerfilAdmin();
+          this.cdr.detectChanges();
+        }, 900);
+      },
+      error: (err) => {
+        this.guardandoPerfilAdmin = false;
+        this.perfilAdminError = err.error?.message || "No se pudo actualizar el perfil.";
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   private cargarClienteLogueado() {

@@ -1,14 +1,24 @@
 package com.HenoTrade.ventaHeno.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.HenoTrade.ventaHeno.Entity.Usuario;
 import com.HenoTrade.ventaHeno.Repository.UsuarioRepositorio;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class AdminServise {
+
+    @Autowired
+    private Cloudinary cloudinary;
 
     private final UsuarioRepositorio repositorio;
 
@@ -55,7 +65,17 @@ public class AdminServise {
         return Optional.empty();
     }
 
+    public Usuario crearUsuario(String usuarioJson, MultipartFile archivoImagen) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Usuario usuario = objectMapper.readValue(usuarioJson, Usuario.class);
+        return crearUsuario(usuario, archivoImagen);
+    }
+
     public Usuario crearUsuario(Usuario usuario) {
+        return crearUsuario(usuario, null);
+    }
+
+    public Usuario crearUsuario(Usuario usuario, MultipartFile archivoImagen) {
         if (usuario.getCedulaU() == null) {
             throw new IllegalArgumentException("La cédula del usuario es obligatoria.");
         }
@@ -76,10 +96,30 @@ public class AdminServise {
             throw new IllegalStateException("Ya existe un usuario registrado con la cédula " + usuario.getCedulaU() + ". No es posible crear otro usuario con la misma cédula.");
         }
 
+        if (archivoImagen != null && !archivoImagen.isEmpty()) {
+            try {
+                Map uploadResult = cloudinary.uploader().upload(archivoImagen.getBytes(), ObjectUtils.emptyMap());
+                String linkImagen = (String) uploadResult.get("secure_url");
+                usuario.setImagen(linkImagen);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al subir la imagen del usuario a Cloudinary: " + e.getMessage(), e);
+            }
+        }
+
         return this.repositorio.save(usuario);
     }
 
+    public Usuario editarUsuario(Long cedulaU, String usuarioJson, MultipartFile archivoImagen) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Usuario datos = objectMapper.readValue(usuarioJson, Usuario.class);
+        return editarUsuario(cedulaU, datos, archivoImagen);
+    }
+
     public Usuario editarUsuario(Long cedulaU, Usuario datos) {
+        return editarUsuario(cedulaU, datos, null);
+    }
+
+    public Usuario editarUsuario(Long cedulaU, Usuario datos, MultipartFile archivoImagen) {
         if (cedulaU == null) {
             throw new IllegalArgumentException("La cédula del usuario es obligatoria.");
         }
@@ -98,6 +138,16 @@ public class AdminServise {
         }
         if (datos.getActivo() != null) {
             usuario.setActivo(datos.getActivo());
+        }
+
+        if (archivoImagen != null && !archivoImagen.isEmpty()) {
+            try {
+                Map uploadResult = cloudinary.uploader().upload(archivoImagen.getBytes(), ObjectUtils.emptyMap());
+                String linkImagen = (String) uploadResult.get("secure_url");
+                usuario.setImagen(linkImagen);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al subir la imagen del usuario a Cloudinary: " + e.getMessage(), e);
+            }
         }
 
         return this.repositorio.save(usuario);

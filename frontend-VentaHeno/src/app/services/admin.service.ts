@@ -8,6 +8,7 @@ export interface Usuario {
   nombre: string;
   rol: string;
   activo?: boolean;
+  imagen?: string;
 }
 
 export interface NuevoUsuario {
@@ -85,16 +86,33 @@ export class AdminService {
     sessionStorage.removeItem('usuario');
   }
 
-  crearUsuario(usuario: NuevoUsuario): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/crearUsuario`, usuario);
+  crearUsuario(usuario: NuevoUsuario, imagen?: File | null): Observable<any> {
+    const formData = new FormData();
+    formData.append('usuario', JSON.stringify(usuario));
+    if (imagen) {
+      formData.append('imagen', imagen);
+    }
+    return this.http.post<any>(`${this.apiUrl}/crearUsuario`, formData);
   }
 
   listarUsuarios(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(`${this.apiUrl}/listarUsuarios`);
   }
 
-  editarUsuario(cedulaU: number, usuario: Partial<Usuario & { clave?: string }>): Observable<Usuario> {
-    return this.http.put<Usuario>(`${this.apiUrl}/editar/${cedulaU}`, usuario);
+  editarUsuario(cedulaU: number, usuario: Partial<Usuario & { clave?: string }>, imagen?: File | null): Observable<Usuario> {
+    const formData = new FormData();
+    formData.append('usuario', JSON.stringify(usuario));
+    if (imagen) {
+      formData.append('imagen', imagen);
+    }
+    return this.http.put<Usuario>(`${this.apiUrl}/editar/${cedulaU}`, formData).pipe(
+      tap(actualizado => {
+        const actual = this.getUsuario();
+        if (actual && actual.cedulaU === actualizado.cedulaU) {
+          sessionStorage.setItem('usuario', JSON.stringify(actualizado));
+        }
+      })
+    );
   }
 
   cambiarEstadoUsuario(cedulaU: number): Observable<Usuario> {
