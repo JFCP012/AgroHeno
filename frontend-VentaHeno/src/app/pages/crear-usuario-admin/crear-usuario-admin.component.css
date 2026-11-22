@@ -498,6 +498,129 @@
   background: #e2e8f0;
 }
 
+/* Avatar en listado */
+.item-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #163e26 0%, #2d5a3d 100%);
+  border: 2px solid #cca243;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.item-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-avatar-svg {
+  width: 22px;
+  height: 22px;
+  stroke: #ffffff;
+}
+
+/* Upload zone (idéntico al módulo de clientes) */
+.upload-zone {
+  position: relative;
+  border: 2px dashed #cbd5e0;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  text-align: center;
+  background-color: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.upload-zone:hover {
+  border-color: #cca243;
+  background-color: #fefce8;
+}
+
+.file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  color: #64748b;
+}
+
+.upload-svg {
+  width: 28px;
+  height: 28px;
+  stroke: #94a3b8;
+}
+
+.upload-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.preview-container {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.preview-img {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #cca243;
+}
+
+.preview-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.upload-zone:hover .preview-overlay {
+  opacity: 1;
+}
+
+.btn-remove-photo {
+  margin-top: 0.35rem;
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-remove-photo:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 640px) {
   .gestion-item {
     flex-direction: column;

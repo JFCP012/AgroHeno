@@ -97,6 +97,175 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
+/* Popover de cuenta interna activa */
+.admin-profile-popover {
+  position: absolute;
+  top: 70px;
+  right: 1.5rem;
+  width: 260px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-top: 3px solid #cca243;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+  padding: 1rem;
+  z-index: 2600;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.admin-popover-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.admin-popover-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #163e26 0%, #2d5a3d 100%);
+  border: 2px solid #cca243;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.admin-popover-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-popover-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1a202c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-popover-id {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.admin-popover-role {
+  display: inline-block;
+  margin-top: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #166534;
+  background: #dcfce7;
+  padding: 0.12rem 0.45rem;
+  border-radius: 9999px;
+  align-self: flex-start;
+  text-transform: uppercase;
+}
+
+.admin-popover-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.admin-popover-edit {
+  width: 100%;
+  padding: 0.5rem;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.admin-popover-edit:hover {
+  background: #dcfce7;
+}
+
+.admin-popover-logout {
+  width: 100%;
+  padding: 0.5rem;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.admin-popover-logout:hover {
+  background: #fee2e2;
+}
+
+/* Modal editar perfil admin */
+.admin-edit-photo-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-edit-avatar {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #163e26 0%, #2d5a3d 100%);
+  border: 2.5px solid #cca243;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.btn-change-photo {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-change-photo:hover {
+  background: #fefce8;
+  border-color: #cca243;
+  color: #854d0e;
+}
+
+.input-readonly {
+  background-color: #f1f5f9 !important;
+  color: #64748b !important;
+  cursor: not-allowed;
+}
+
+.profile-success-banner {
+  background-color: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
 .user-avatar-btn:has(.avatar-photo):hover {
   box-shadow: 0 6px 20px rgba(204, 162, 67, 0.65);
 }

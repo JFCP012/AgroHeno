@@ -37,6 +37,9 @@ public class Usuario {
     @Builder.Default
     private Boolean activo = true;
 
+    @Column(name = "imagen", length = 255)
+    private String imagen;
+
     public Boolean getActivo() {
         return activo == null ? true : activo;
     }

@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize, timeout } from 'rxjs/operators';
 import { AdminService, NuevoUsuario, Usuario } from '../../services/admin.service';
 
 export interface PerfilOpcion {
@@ -154,12 +155,20 @@ export class CrearUsuarioAdminComponent implements OnInit {
         next: (usuarioEditado) => {
           this.loading = false;
           this.cerrarModal();
+          const idx = this.usuariosRegistrados.findIndex(u => u.cedulaU === usuarioEditado.cedulaU);
+          if (idx !== -1) {
+            this.usuariosRegistrados[idx] = usuarioEditado;
+            this.usuariosRegistrados = [...this.usuariosRegistrados];
+            this.aplicarFiltros();
+          }
           this.mostrarNotificacionExito(`Usuario ${usuarioEditado.nombre} actualizado correctamente.`);
-          this.cargarUsuariosRegistrados();
+          this.cdr.detectChanges();
+          this.cargarUsuariosRegistrados(true);
         },
         error: (err) => {
           this.loading = false;
           this.errorMsg = err.error?.message || 'Error al actualizar el usuario.';
+          this.cdr.detectChanges();
         }
       });
       return;
@@ -184,9 +193,12 @@ export class CrearUsuarioAdminComponent implements OnInit {
       next: (usuarioCreado) => {
         this.loading = false;
         this.cerrarModal();
+        this.usuariosRegistrados = [usuarioCreado, ...this.usuariosRegistrados.filter(u => u.cedulaU !== usuarioCreado.cedulaU)];
+        this.aplicarFiltros();
         const perfilNombre = this.obtenerNombrePerfil(usuarioCreado.rol);
         this.mostrarNotificacionExito(`Usuario registrado con éxito: ${usuarioCreado.nombre} (${perfilNombre}).`);
-        this.cargarUsuariosRegistrados();
+        this.cdr.detectChanges();
+        this.cargarUsuariosRegistrados(true);
       },
       error: (err) => {
         this.loading = false;
@@ -197,6 +209,7 @@ export class CrearUsuarioAdminComponent implements OnInit {
         } else {
           this.errorMsg = err.error?.message || 'Error en el servidor al intentar crear el usuario.';
         }
+        this.cdr.detectChanges();
       }
     });
   }
@@ -209,22 +222,38 @@ export class CrearUsuarioAdminComponent implements OnInit {
     }
     this.adminService.cambiarEstadoUsuario(usuario.cedulaU).subscribe({
       next: (actualizado) => {
+        const idx = this.usuariosRegistrados.findIndex(u => u.cedulaU === actualizado.cedulaU);
+        if (idx !== -1) {
+          this.usuariosRegistrados[idx] = actualizado;
+          this.usuariosRegistrados = [...this.usuariosRegistrados];
+          this.aplicarFiltros();
+        }
         const nuevoEstado = actualizado.activo !== false ? 'activado' : 'desactivado';
         this.mostrarNotificacionExito(`Usuario ${usuario.nombre} ${nuevoEstado} correctamente.`);
-        this.cargarUsuariosRegistrados();
+        this.cdr.detectChanges();
+        this.cargarUsuariosRegistrados(true);
       },
       error: (err) => {
         this.errorMsg = err.error?.message || `Error al ${accion} el usuario.`;
+        this.cdr.detectChanges();
       }
     });
   }
 
-  cargarUsuariosRegistrados(): void {
-    this.cargandoUsuarios = true;
-    this.errorMsg = '';
-    this.cdr.detectChanges();
+  cargarUsuariosRegistrados(silencioso: boolean = false): void {
+    if (!silencioso) {
+      this.cargandoUsuarios = true;
+      this.errorMsg = '';
+      this.cdr.detectChanges();
+    }
 
-    this.adminService.listarUsuarios().subscribe({
+    this.adminService.listarUsuarios().pipe(
+      timeout(10000),
+      finalize(() => {
+        this.cargandoUsuarios = false;
+        this.cdr.detectChanges();
+      })
+    ).subscribe({
       next: (data) => {
         this.usuariosRegistrados = data || [];
         this.aplicarFiltros();
@@ -233,7 +262,9 @@ export class CrearUsuarioAdminComponent implements OnInit {
       },
       error: (err) => {
         this.cargandoUsuarios = false;
-        this.errorMsg = 'No se pudo conectar con el servidor para cargar los usuarios. ' + (err.error?.message || err.message || 'Verifique que el backend esté en ejecución.');
+        if (!silencioso) {
+          this.errorMsg = 'No se pudo conectar con el servidor para cargar los usuarios. ' + (err.error?.message || err.message || 'Verifique que el backend esté en ejecución.');
+        }
         this.cdr.detectChanges();
       }
     });
@@ -241,15 +272,17 @@ export class CrearUsuarioAdminComponent implements OnInit {
 
   obtenerNombrePerfil(codigoRol: string): string {
     const normalizado = (codigoRol || '').toUpperCase().trim();
-    const encontrado = this.perfilesDisponibles.find(p => p.valor === normalizado);
+    const encontrado = this.perfilesDisponibles.find(p => p.valor.toUpperCase() === normalizado);
     return encontrado ? encontrado.nombre : codigoRol;
   }
 
   private mostrarNotificacionExito(msg: string): void {
     this.successMsg = msg;
+    this.cdr.detectChanges();
     setTimeout(() => {
       if (this.successMsg === msg) {
         this.successMsg = '';
+        this.cdr.detectChanges();
       }
     }, 4500);
   }

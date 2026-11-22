@@ -14,6 +14,97 @@
     </svg>
 </div>
 
+<!-- Círculo de Usuario Interno / Admin (Esquina Superior Derecha en vistas administrativas) -->
+<div class="user-avatar-btn" (click)="toggleAdminMenu()" *ngIf="esRutaExcluida && usuarioAdminLogueado"
+    [title]="usuarioAdminLogueado.nombre + ' (' + usuarioAdminLogueado.rol + ')'">
+    <img *ngIf="usuarioAdminLogueado.imagen" [src]="usuarioAdminLogueado.imagen" alt="Foto de Perfil" class="avatar-photo" />
+
+    <svg *ngIf="!usuarioAdminLogueado.imagen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="avatar-svg"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+    </svg>
+</div>
+
+<!-- Menú desplegable de identificación de cuenta interna activa -->
+<div class="admin-profile-popover" *ngIf="esRutaExcluida && usuarioAdminLogueado && mostrarAdminMenu" (click)="$event.stopPropagation()">
+    <div class="admin-popover-header">
+        <div class="admin-popover-avatar">
+            <img *ngIf="usuarioAdminLogueado.imagen" [src]="usuarioAdminLogueado.imagen" alt="Foto de Perfil" class="avatar-photo" />
+            <svg *ngIf="!usuarioAdminLogueado.imagen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="avatar-svg"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </div>
+        <div class="admin-popover-info">
+            <span class="admin-popover-name">{{ usuarioAdminLogueado.nombre }}</span>
+            <span class="admin-popover-id">Cédula: {{ usuarioAdminLogueado.cedulaU }}</span>
+            <span class="admin-popover-role">{{ usuarioAdminLogueado.rol }}</span>
+        </div>
+    </div>
+    <div class="admin-popover-actions">
+        <button type="button" class="admin-popover-edit" (click)="abrirEditarPerfilAdmin()">Editar Perfil</button>
+        <button type="button" class="admin-popover-logout" (click)="cerrarSesionAdmin()">Cerrar Sesión</button>
+    </div>
+</div>
+
+<!-- Modal Editar Perfil de Usuario Interno -->
+<div class="modal-overlay" *ngIf="mostrarEditarPerfilAdmin" (click)="cerrarEditarPerfilAdmin()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+        <button type="button" class="modal-close" (click)="cerrarEditarPerfilAdmin()" title="Cerrar">✕</button>
+
+        <div class="modal-header">
+            <h3>Editar Mi Perfil</h3>
+            <p>Actualiza tu nombre o fotografía de perfil</p>
+        </div>
+
+        <div class="login-body">
+            <form (ngSubmit)="guardarPerfilAdmin()">
+                <div *ngIf="perfilAdminError" class="login-error-banner">
+                    {{ perfilAdminError }}
+                </div>
+                <div *ngIf="perfilAdminExito" class="profile-success-banner">
+                    {{ perfilAdminExito }}
+                </div>
+
+                <!-- Foto de Perfil -->
+                <div class="admin-edit-photo-row">
+                    <div class="admin-edit-avatar">
+                        <img *ngIf="editAdminImagenPreview" [src]="editAdminImagenPreview" alt="Vista previa" class="avatar-photo" />
+                        <svg *ngIf="!editAdminImagenPreview" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="avatar-svg"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <label class="btn-change-photo">
+                        Cambiar Foto
+                        <input type="file" accept="image/*" (change)="onAdminFileSelected($event)" hidden />
+                    </label>
+                </div>
+
+                <!-- Cédula (Solo lectura) -->
+                <div class="input-group">
+                    <label for="editAdminCedula">CÉDULA</label>
+                    <input type="text" id="editAdminCedula" [value]="usuarioAdminLogueado?.cedulaU" disabled class="input-readonly" />
+                </div>
+
+                <!-- Nombre -->
+                <div class="input-group">
+                    <label for="editAdminNombre">NOMBRE COMPLETO</label>
+                    <input type="text" id="editAdminNombre" name="editAdminNombre" [(ngModel)]="editAdminNombre"
+                        placeholder="Ingresa tu nombre" required autocomplete="off" />
+                </div>
+
+                <button type="submit" class="btn-login" [disabled]="guardandoPerfilAdmin">
+                    {{ guardandoPerfilAdmin ? 'Guardando...' : 'Guardar Cambios' }}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Emergente de Login (Base para que construyas tu formulario) -->
 <div class="modal-overlay" *ngIf="mostrarLoginModal" (click)="cerrarModalUsuario()">
     <div class="modal-card" (click)="$event.stopPropagation()">
