@@ -8,8 +8,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.HenoTrade.ventaHeno.Entity.*;
 import com.HenoTrade.ventaHeno.Repository.*;
@@ -38,6 +38,7 @@ public class KpiService {
             "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
     };
 
+    @Transactional(readOnly = true)
     public DashboardKpisDTO obtenerDashboardKpis(Integer anio, Integer mes, boolean soloSoporte) {
         LocalDateTime ahora = LocalDateTime.now();
 
@@ -211,30 +212,32 @@ public class KpiService {
         // Evolución últimos 6 meses (Ventas vs Tickets)
         List<EvolucionMensualDTO> evolucion = calcularEvolucion6Meses(todasFacturas, todosTickets);
 
-        // Ranking de fallas por Tipo de Heno y por Especie Animal
-        List<DetalleVenta> detalles = detalleVentaRepositorio.findAll();
-        List<Tipo_Heno> tiposHeno = tipoHenoRepositorio.findAll();
-
-        Map<Long, List<String>> henoAAnimales = new HashMap<>();
-        for (Tipo_Heno th : tiposHeno) {
-            if (th.getHeno() != null && th.getAnimales() != null) {
-                henoAAnimales.computeIfAbsent(th.getHeno().getIdHeno(), k -> new ArrayList<>())
-                        .add(th.getAnimales().getNombre());
-            }
-        }
-
+        // Ranking de fallas por Tipo de Heno y por Especie Animal (solo detalles de facturas con ticket)
         Map<String, Long> fallasHenoMap = new HashMap<>();
         Map<String, Long> fallasAnimalMap = new HashMap<>();
 
-        for (DetalleVenta dv : detalles) {
-            if (dv.getFactura() != null && facturasConTicket.contains(dv.getFactura().getIdFactura())
-                    && dv.getHeno() != null) {
-                String nomHeno = dv.getHeno().getNombre() != null ? dv.getHeno().getNombre() : "Sin nombre";
-                fallasHenoMap.merge(nomHeno, 1L, Long::sum);
+        if (!facturasConTicket.isEmpty()) {
+            List<DetalleVenta> detalles = detalleVentaRepositorio
+                    .findByFacturaIdFacturaIn(new ArrayList<>(facturasConTicket));
+            if (!detalles.isEmpty()) {
+                Map<Long, List<String>> henoAAnimales = new HashMap<>();
+                for (Tipo_Heno th : tipoHenoRepositorio.findAll()) {
+                    if (th.getHeno() != null && th.getAnimales() != null) {
+                        henoAAnimales.computeIfAbsent(th.getHeno().getIdHeno(), k -> new ArrayList<>())
+                                .add(th.getAnimales().getNombre());
+                    }
+                }
 
-                List<String> animales = henoAAnimales.getOrDefault(dv.getHeno().getIdHeno(), List.of("General"));
-                for (String animal : animales) {
-                    fallasAnimalMap.merge(animal, 1L, Long::sum);
+                for (DetalleVenta dv : detalles) {
+                    if (dv.getHeno() != null) {
+                        String nomHeno = dv.getHeno().getNombre() != null ? dv.getHeno().getNombre() : "Sin nombre";
+                        fallasHenoMap.merge(nomHeno, 1L, Long::sum);
+
+                        List<String> animales = henoAAnimales.getOrDefault(dv.getHeno().getIdHeno(), List.of("General"));
+                        for (String animal : animales) {
+                            fallasAnimalMap.merge(animal, 1L, Long::sum);
+                        }
+                    }
                 }
             }
         }
@@ -318,8 +321,7 @@ public class KpiService {
                         t -> normalizar(t.getCategoriaTicket(), "SOPORTE_WEB"),
                         Collectors.counting()));
 
-        Map<String, Long> faqsPorCat = preguntasFrecuentesRepositorio.findAll().stream()
-                .filter(p -> Boolean.TRUE.equals(p.getActivo()))
+        Map<String, Long> faqsPorCat = preguntasFrecuentesRepositorio.findByActivoTrue().stream()
                 .collect(Collectors.groupingBy(p -> {
                     String cat = normalizar(p.getCategoria(), "SOPORTE_WEB");
                     return "GENERAL".equals(cat) ? "SOPORTE_WEB" : cat;
@@ -339,33 +341,40 @@ public class KpiService {
 
     private List<EvolucionMensualDTO> calcularEvolucion6Meses(List<Factura> facturas, List<Ticket> tickets) {
         YearMonth actual = YearMonth.now();
-        List<EvolucionMensualDTO> resultado = new ArrayList<>();
-        for (int i = 5; i >= 0; i--) {
-            YearMonth ym = actual.minusMonths(i);
-            long cantFact = 0;
-            double totalIng = 0.0;
-            for (Factura f : facturas) {
-                if (f.getFechaFactura() != null) {
-                    LocalDate ld = f.getFechaFactura().toLocalDate();
-                    if (ld.getYear() == ym.getYear() && ld.getMonthValue() == ym.getMonthValue()) {
-                        cantFact++;
-                        totalIng += f.getTotalVenta() != null ? f.getTotalVenta() : 0.0;
-                    }
+        YearMonth inicio = actual.minusMonths(5);
+
+        Map<YearMonth, Long> factPorMes = new HashMap<>();
+        Map<YearMonth, Double> ingPorMes = new HashMap<>();
+        for (Factura f : facturas) {
+            if (f.getFechaFactura() != null) {
+                YearMonth ym = YearMonth.from(f.getFechaFactura().toLocalDate());
+                if (!ym.isBefore(inicio) && !ym.isAfter(actual)) {
+                    factPorMes.merge(ym, 1L, Long::sum);
+                    ingPorMes.merge(ym, f.getTotalVenta() != null ? f.getTotalVenta() : 0.0, Double::sum);
                 }
             }
-            long cantTkt = tickets.stream()
-                    .filter(t -> t.getFechaInicio() != null
-                            && t.getFechaInicio().getYear() == ym.getYear()
-                            && t.getFechaInicio().getMonthValue() == ym.getMonthValue())
-                    .count();
+        }
 
+        Map<YearMonth, Long> tktPorMes = new HashMap<>();
+        for (Ticket t : tickets) {
+            if (t.getFechaInicio() != null) {
+                YearMonth ym = YearMonth.from(t.getFechaInicio());
+                if (!ym.isBefore(inicio) && !ym.isAfter(actual)) {
+                    tktPorMes.merge(ym, 1L, Long::sum);
+                }
+            }
+        }
+
+        List<EvolucionMensualDTO> resultado = new ArrayList<>(6);
+        for (int i = 5; i >= 0; i--) {
+            YearMonth ym = actual.minusMonths(i);
             String etiqueta = MESES_CORTOS[ym.getMonthValue() - 1] + " " + String.valueOf(ym.getYear()).substring(2);
             resultado.add(EvolucionMensualDTO.builder()
                     .periodo(ym.toString())
                     .etiquetaMes(etiqueta)
-                    .totalFacturas(cantFact)
-                    .ingresos(redondear(totalIng))
-                    .totalTickets(cantTkt)
+                    .totalFacturas(factPorMes.getOrDefault(ym, 0L))
+                    .ingresos(redondear(ingPorMes.getOrDefault(ym, 0.0)))
+                    .totalTickets(tktPorMes.getOrDefault(ym, 0L))
                     .build());
         }
         return resultado;

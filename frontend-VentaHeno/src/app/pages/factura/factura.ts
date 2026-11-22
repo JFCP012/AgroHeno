@@ -6,6 +6,7 @@ import { CarritoService } from '../../services/carrito.service';
 import { FacturaService } from '../../services/factura.service';
 import { ClienteService } from '../../services/cliente.service';
 import { AdminService } from '../../services/admin.service';
+import { PdfUtilsService, LogoData } from '../../services/pdf-utils.service';
 import { Factura as FacturaModel } from '../../models/Factura';
 import { take } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
@@ -27,6 +28,7 @@ export class Factura implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   clienteService = inject(ClienteService);
   adminService = inject(AdminService);
+  private pdfUtils = inject(PdfUtilsService);
   private cdr = inject(ChangeDetectorRef);
 
   private itemsSubscription?: Subscription;
@@ -99,8 +101,7 @@ export class Factura implements OnInit, OnDestroy {
   compraExitosa = false;
   procesando = false;
   ultimaCompra: any = null;
-  private logoBase64: string = '';
-  private logoAspectRatio: number = 1.0;
+  private logoData: LogoData = { base64: '', aspectRatio: 1.0 };
 
   ngOnInit() {
     // Subscribe to cart items to keep totals updated reactively
@@ -117,7 +118,7 @@ export class Factura implements OnInit, OnDestroy {
       this.actualizarEnvio();
     });
 
-    this.cargarLogo();
+    this.pdfUtils.obtenerLogo().then(logo => { this.logoData = logo; });
 
     // Si hay un cliente logueado, rellenar el formulario automáticamente
     const clienteGuardado = localStorage.getItem('clienteActivo');
@@ -235,30 +236,13 @@ export class Factura implements OnInit, OnDestroy {
   }
 
 
-  private cargarLogo() {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d')!;
-
-      // Dibujar la imagen sin fondo blanco para mantener su transparencia original
-      ctx.drawImage(img, 0, 0);
-      this.logoAspectRatio = img.width / img.height;
-      this.logoBase64 = canvas.toDataURL('image/png');
-      console.log('✅ Logo cargado correctamente, aspect ratio:', this.logoAspectRatio);
-    };
-    img.onerror = (e) => console.error('❌ Error cargando logo:', e);
-    img.src = '/assets/Imagenes/Logo2.png';
-  }
-
   procesarCompra() {
     if (!this.factura.nombreC || !this.factura.cedulaC || !this.factura.telefonoC) {
       alert('Por favor complete todos los campos obligatorios');
       return;
     }
 
+    let direccionFinal: string;
     if (this.tipoEntrega === 'envio') {
       if (this.totalPacas < 50) {
         alert('La cantidad mínima para envíos es de 50 pacas. Por favor, ajuste su pedido.');
@@ -268,14 +252,15 @@ export class Factura implements OnInit, OnDestroy {
         alert('Por favor complete todos los campos de la dirección de envío');
         return;
       }
-      this.factura.direccionC = `${this.factura.direccionC}, ${this.municipioSeleccionado}, ${this.departamentoSeleccionado}`;
+      direccionFinal = `${this.factura.direccionC}, ${this.municipioSeleccionado}, ${this.departamentoSeleccionado}`;
     } else {
-      this.factura.direccionC = 'Finca Santa Helena - La Dorada, Caldas';
+      direccionFinal = 'Finca Santa Helena - La Dorada, Caldas';
     }
 
     this.procesando = true;
     const hoy = new Date();
-    this.factura.fechaFactura = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+    const fechaHoy = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+    this.factura.fechaFactura = fechaHoy;
     this.factura.totalVenta = this.total;
     this.factura.envio = this.envio;
 
@@ -298,6 +283,7 @@ export class Factura implements OnInit, OnDestroy {
       const compraDTO = {
         factura: {
           ...this.factura,
+          direccionC: direccionFinal,
           usuario: cedulaU ? { cedulaU } : null,
           cliente: this.clienteSeleccionado ? { cedula: this.clienteSeleccionado.cedula } : null
         },
@@ -306,7 +292,6 @@ export class Factura implements OnInit, OnDestroy {
 
       this.facturaService.procesarCompra(compraDTO).subscribe({
         next: (res) => {
-          console.log('Factura generada en BD:', res);
           this.compraExitosa = true;
           this.procesando = false;
 
@@ -341,29 +326,7 @@ export class Factura implements OnInit, OnDestroy {
       const doc = new jsPDF();
       const f = this.ultimaCompra.facturaGuardada;
 
-      doc.setFont("helvetica");
-
-      // ── Logo ──────────────────────────────────────────────────────────
-      if (this.logoBase64) {
-        // Ajustamos el tamaño del logo, mantienendo su relación de aspecto
-        const height = 25;
-        const width = height * this.logoAspectRatio;
-        doc.addImage(this.logoBase64, 'PNG', 14, 10, width, height);
-
-        doc.setFontSize(22);
-        doc.setTextColor(56, 161, 105);
-        doc.text("AgroHeno", 14 + width + 5, 24);
-      } else {
-        // Fallback
-        doc.setFontSize(22);
-        doc.setTextColor(56, 161, 105);
-        doc.text("AgroHeno", 14, 24);
-      }
-
-      // Línea separadora
-      doc.setDrawColor(56, 161, 105);
-      doc.setLineWidth(0.5);
-      doc.line(14, 40, 196, 40);
+      this.pdfUtils.dibujarEncabezado(doc, this.logoData, 25, 40);
 
       // Título
       doc.setFontSize(14);
@@ -450,19 +413,7 @@ export class Factura implements OnInit, OnDestroy {
       doc.setTextColor(148, 163, 184);
       doc.text("Gracias por su compra en AgroHeno.", 105, 281, { align: 'center' });
 
-      const pageCount = (doc as any).internal.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(10);
-        doc.setTextColor(150);
-        const pageSize = doc.internal.pageSize;
-        const pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
-        const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
-        const text = "Fabricantes de heno";
-        const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-        const x = (pageWidth - textWidth) / 2;
-        doc.text(text, x, pageHeight - 10);
-      }
+      this.pdfUtils.dibujarPieDePagina(doc);
 
       doc.save(`Factura_AgroHeno_${f.idFactura || Date.now()}.pdf`);
     } catch (e: any) {

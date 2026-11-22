@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { TicketService } from '../../services/ticket.service';
 import { AdminService, Usuario } from '../../services/admin.service';
 import { Ticket } from '../../models/ticket';
@@ -13,7 +14,7 @@ import { Ticket } from '../../models/ticket';
   templateUrl: './gestion-tickets.component.html',
   styleUrls: ['./gestion-tickets.component.css']
 })
-export class GestionTicketsComponent implements OnInit {
+export class GestionTicketsComponent implements OnInit, OnDestroy {
   private ticketService = inject(TicketService);
   private adminService = inject(AdminService);
   private router = inject(Router);
@@ -31,6 +32,7 @@ export class GestionTicketsComponent implements OnInit {
   filtroPrioridad: string = 'TODAS';
   filtroCategoria: string = 'TODAS';
   private debounceTimer: any = null;
+  private filtroSub?: Subscription;
 
   // KPIs
   totalTickets: number = 0;
@@ -185,7 +187,8 @@ export class GestionTicketsComponent implements OnInit {
   }
 
   private aplicarFiltrosBackend(): void {
-    this.ticketService.filtrarTickets(
+    this.filtroSub?.unsubscribe();
+    this.filtroSub = this.ticketService.filtrarTickets(
       this.filtroEstado,
       this.filtroPrioridad,
       this.filtroCategoria,
@@ -204,6 +207,13 @@ export class GestionTicketsComponent implements OnInit {
         console.error('Error al filtrar tickets desde el backend:', err);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+    this.filtroSub?.unsubscribe();
   }
 
   /**

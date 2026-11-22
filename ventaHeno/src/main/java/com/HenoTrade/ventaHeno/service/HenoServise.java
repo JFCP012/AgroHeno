@@ -4,7 +4,6 @@ import com.HenoTrade.ventaHeno.Entity.Heno;
 import com.HenoTrade.ventaHeno.Repository.HenoRepositorio;
 import com.HenoTrade.ventaHeno.Repository.TipoHenoRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,7 +26,10 @@ public class HenoServise {
     @Autowired
     private Cloudinary cloudinary;
 
-    public HenoServise(HenoRepositorio repositorio, TipoHenoServise tipoHenoServise, TipoHenoRepositorio tipoHenoRepositorio) {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
+
+    public HenoServise(HenoRepositorio repositorio, TipoHenoServise tipoHenoServise,
+            TipoHenoRepositorio tipoHenoRepositorio) {
         this.repositorio = repositorio;
         this.tipoHenoServise = tipoHenoServise;
         this.tipoHenoRepositorio = tipoHenoRepositorio;
@@ -41,42 +43,42 @@ public class HenoServise {
         try {
             jdbcTemplate.execute("ALTER TABLE heno ALTER COLUMN descripcion DROP NOT NULL");
             System.out.println("==== FIX DB APLICADO: Columna 'descripcion' en tabla 'heno' ahora permite nulos ====");
-        } catch(Exception e) {
+        } catch (Exception e) {
             System.out.println("==== FIX DB INFO: " + e.getMessage() + " ====");
         }
 
         try {
             jdbcTemplate.execute("UPDATE heno SET activo = true WHERE activo IS NULL");
             System.out.println("==== FIX DB APLICADO: Columna 'activo' inicializada a true para nulos ====");
-        } catch(Exception e) {
+        } catch (Exception e) {
             System.out.println("==== FIX DB ACTIVO INFO: " + e.getMessage() + " ====");
         }
 
         try {
             Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM animales", Integer.class);
             if (count == null || count == 0) {
-                jdbcTemplate.execute("INSERT INTO animales (id_animales, nombre) VALUES (1, 'Bovinos'), (2, 'Equinos'), (3, 'Ovinos')");
+                jdbcTemplate.execute(
+                        "INSERT INTO animales (id_animales, nombre) VALUES (1, 'Bovinos'), (2, 'Equinos'), (3, 'Ovinos')");
                 try {
                     jdbcTemplate.execute("SELECT setval(pg_get_serial_sequence('animales', 'id_animales'), 3)");
-                } catch(Exception seqEx) {
+                } catch (Exception seqEx) {
                     System.out.println("==== SEED SEQUENCE INFO: " + seqEx.getMessage() + " ====");
                 }
                 System.out.println("==== SEED APLICADO: Animales (Bovinos, Equinos, Ovinos) creados con éxito ====");
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             System.out.println("==== SEED ERR: " + e.getMessage() + " ====");
         }
     }
 
     public Heno crearHeno(String henoJson, MultipartFile archivoImagen, List<Long> idAnimales) throws IOException {
         // 1. Parsear el JSON del heno a un objeto de la entidad Heno
-        ObjectMapper objectMapper = new ObjectMapper();
-        Heno heno = objectMapper.readValue(henoJson, Heno.class);
+        Heno heno = OBJECT_MAPPER.readValue(henoJson, Heno.class);
 
         double precioU = heno.getPrecioU();
         double precioC = (precioU * heno.getStock());
         heno.setPrecioC(precioC);
-        
+
         // Asignar activo basado en el stock
         if (heno.getStock() != null && heno.getStock() > 0) {
             heno.setActivo(true);
@@ -130,13 +132,13 @@ public class HenoServise {
         return repositorio.save(heno);
     }
 
-    public Heno editarHeno(Long id, String henoJson, MultipartFile archivoImagen, List<Long> idAnimales) throws IOException {
+    public Heno editarHeno(Long id, String henoJson, MultipartFile archivoImagen, List<Long> idAnimales)
+            throws IOException {
         Heno henoExistente = repositorio.findById(id)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Heno no encontrado"));
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        Heno henoDatos = objectMapper.readValue(henoJson, Heno.class);
+        Heno henoDatos = OBJECT_MAPPER.readValue(henoJson, Heno.class);
 
         henoExistente.setNombre(henoDatos.getNombre());
         henoExistente.setPrecioU(henoDatos.getPrecioU());
@@ -145,9 +147,9 @@ public class HenoServise {
         henoExistente.setDescripcionLarga(henoDatos.getDescripcionLarga());
         henoExistente.setFechaEntrada(henoDatos.getFechaEntrada());
         henoExistente.setEstado(henoDatos.getEstado());
-        
+
         // Manejo automático de estado basado en el stock
-        if (henoExistente.getStock() > 0) {
+        if (henoExistente.getStock() != null && henoExistente.getStock() > 0) {
             henoExistente.setActivo(true);
         } else {
             henoExistente.setActivo(false);

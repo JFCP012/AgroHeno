@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { PreguntasFrecuentes } from '../../models/preguntasFrecuentes';
 import { PreguntasFrecuentesService } from '../../services/preguntasFrecuentes.service';
 
@@ -18,11 +19,12 @@ interface CategoriaFaq {
   templateUrl: './preguntas-frecuentes.component.html',
   styleUrls: ['./preguntas-frecuentes.component.css']
 })
-export class PreguntasFrecuentesComponent implements OnInit {
+export class PreguntasFrecuentesComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private faqService = inject(PreguntasFrecuentesService);
   private cdr = inject(ChangeDetectorRef);
+  private querySub?: Subscription;
 
   // Datos de preguntas
   preguntas: PreguntasFrecuentes[] = [];
@@ -50,7 +52,7 @@ export class PreguntasFrecuentesComponent implements OnInit {
 
   ngOnInit(): void {
     // 1. Capturar parámetros de URL (si el cliente viene desde una factura en perfil-cliente)
-    this.route.queryParams.subscribe(params => {
+    this.querySub = this.route.queryParams.subscribe(params => {
       const paramFactura = params['idFactura'];
       if (paramFactura && !isNaN(Number(paramFactura))) {
         this.idFactura = Number(paramFactura);
@@ -65,6 +67,10 @@ export class PreguntasFrecuentesComponent implements OnInit {
 
       this.cargarPreguntasActivas();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.querySub?.unsubscribe();
   }
 
   cargarPreguntasActivas(): void {

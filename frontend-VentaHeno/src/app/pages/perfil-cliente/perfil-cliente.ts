@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,6 +7,7 @@ import { ClienteService } from '../../services/cliente.service';
 import { ReportesService } from '../../services/reportes.service';
 import { ReporteVentaCliente, FacturaReporte, DetalleFacturaReporte } from '../../models/reporte-venta.model';
 import { TicketService } from '../../services/ticket.service';
+import { PdfUtilsService, LogoData } from '../../services/pdf-utils.service';
 import { Ticket } from '../../models/ticket';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -18,11 +19,12 @@ import autoTable from 'jspdf-autotable';
   templateUrl: './perfil-cliente.html',
   styleUrl: './perfil-cliente.css'
 })
-export class PerfilCliente implements OnInit {
+export class PerfilCliente implements OnInit, OnDestroy {
   private router = inject(Router);
   private clienteService = inject(ClienteService);
   private reportesService = inject(ReportesService);
   private ticketService = inject(TicketService);
+  private pdfUtils = inject(PdfUtilsService);
   private cdr = inject(ChangeDetectorRef);
 
   cliente: Cliente | null = null;
@@ -53,8 +55,7 @@ export class PerfilCliente implements OnInit {
   mensajeExitoPerfil: string | null = null;
   mensajeErrorPerfil: string | null = null;
 
-  private logoBase64: string = '';
-  private logoAspectRatio: number = 1.0;
+  private logoData: LogoData = { base64: '', aspectRatio: 1.0 };
 
   ngOnInit() {
     const guardado = localStorage.getItem('clienteActivo');
@@ -71,24 +72,16 @@ export class PerfilCliente implements OnInit {
       return;
     }
 
-    this.cargarLogo();
+    this.pdfUtils.obtenerLogo().then(logo => { this.logoData = logo; });
     this.iniciarFormularioEdit();
     this.cargarFacturas();
     this.cargarTicketsCliente();
   }
 
-  private cargarLogo() {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0);
-      this.logoAspectRatio = img.width / img.height;
-      this.logoBase64 = canvas.toDataURL('image/png');
-    };
-    img.src = '/assets/Imagenes/Logo2.png';
+  ngOnDestroy() {
+    if (this.previewImagenUrl && this.previewImagenUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.previewImagenUrl);
+    }
   }
 
   iniciarFormularioEdit() {
@@ -132,26 +125,6 @@ export class PerfilCliente implements OnInit {
       next: (data) => {
         this.reporteCliente = data;
         this.cargandoFacturas = false;
-
-        // Comprobar cada factura con obtenerTicketsPorFactura
-        if (this.reporteCliente?.facturas) {
-          this.reporteCliente.facturas.forEach(f => {
-            if (f.idFactura) {
-              this.ticketService.obtenerTicketsPorFactura(f.idFactura).subscribe({
-                next: (ticketsFactura) => {
-                  if (ticketsFactura && ticketsFactura.length > 0) {
-                    this.facturasConTicket.add(Number(f.idFactura));
-                    this.ticketsPorFactura.set(Number(f.idFactura), ticketsFactura[0]);
-                    this.cdr.detectChanges();
-                  }
-                },
-                error: (err) => console.error('Error verificando ticket de factura', f.idFactura, err)
-              });
-            }
-          });
-        }
-
-        this.cargarTicketsCliente();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -172,13 +145,17 @@ export class PerfilCliente implements OnInit {
     this.ticketService.obtenerTicketsPorCliente(this.cliente.cedula).subscribe({
       next: (tickets) => {
         this.ticketsCliente = tickets || [];
+        this.facturasConTicket.clear();
+        this.ticketsPorFactura.clear();
 
         this.ticketsCliente.forEach(t => {
           const idFac = (t.factura as any)?.idFactura || (typeof t.factura === 'number' ? t.factura : null);
           if (idFac) {
             const numId = Number(idFac);
             this.facturasConTicket.add(numId);
-            this.ticketsPorFactura.set(numId, t);
+            if (!this.ticketsPorFactura.has(numId)) {
+              this.ticketsPorFactura.set(numId, t);
+            }
           }
         });
 
@@ -214,27 +191,7 @@ export class PerfilCliente implements OnInit {
 
     try {
       const doc = new jsPDF();
-      doc.setFont('helvetica');
-
-      // Logo
-      if (this.logoBase64) {
-        const height = 18;
-        const width = height * this.logoAspectRatio;
-        doc.addImage(this.logoBase64, 'PNG', 14, 10, width, height);
-
-        doc.setFontSize(20);
-        doc.setTextColor(56, 161, 105);
-        doc.text('AgroHeno', 14 + width + 4, 22);
-      } else {
-        doc.setFontSize(20);
-        doc.setTextColor(56, 161, 105);
-        doc.text('AgroHeno', 14, 22);
-      }
-
-      // Línea separadora
-      doc.setDrawColor(56, 161, 105);
-      doc.setLineWidth(0.5);
-      doc.line(14, 34, 196, 34);
+      this.pdfUtils.dibujarEncabezado(doc, this.logoData, 18, 34);
 
       // Título
       doc.setFontSize(14);

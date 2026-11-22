@@ -1,5 +1,6 @@
 package com.HenoTrade.ventaHeno.Entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -23,6 +24,7 @@ public class Usuario {
     @Column(name = "cedulaU", nullable = false, unique = true)
     private Long cedulaU;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "clave", nullable = false)
     private String clave;
 

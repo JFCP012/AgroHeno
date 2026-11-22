@@ -160,6 +160,7 @@ export class CrearUsuarioAdminComponent implements OnInit {
         error: (err) => {
           this.loading = false;
           this.errorMsg = err.error?.message || 'Error al actualizar el usuario.';
+          this.cdr.detectChanges();
         }
       });
       return;
@@ -197,6 +198,7 @@ export class CrearUsuarioAdminComponent implements OnInit {
         } else {
           this.errorMsg = err.error?.message || 'Error en el servidor al intentar crear el usuario.';
         }
+        this.cdr.detectChanges();
       }
     });
   }
@@ -215,6 +217,7 @@ export class CrearUsuarioAdminComponent implements OnInit {
       },
       error: (err) => {
         this.errorMsg = err.error?.message || `Error al ${accion} el usuario.`;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -241,15 +244,17 @@ export class CrearUsuarioAdminComponent implements OnInit {
 
   obtenerNombrePerfil(codigoRol: string): string {
     const normalizado = (codigoRol || '').toUpperCase().trim();
-    const encontrado = this.perfilesDisponibles.find(p => p.valor === normalizado);
+    const encontrado = this.perfilesDisponibles.find(p => p.valor.toUpperCase() === normalizado);
     return encontrado ? encontrado.nombre : codigoRol;
   }
 
   private mostrarNotificacionExito(msg: string): void {
     this.successMsg = msg;
+    this.cdr.detectChanges();
     setTimeout(() => {
       if (this.successMsg === msg) {
         this.successMsg = '';
+        this.cdr.detectChanges();
       }
     }, 4500);
   }

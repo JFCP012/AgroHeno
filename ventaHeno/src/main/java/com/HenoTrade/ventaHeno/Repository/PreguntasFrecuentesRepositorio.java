@@ -18,4 +18,6 @@ public interface PreguntasFrecuentesRepositorio extends JpaRepository<PreguntasF
            "AND (:activo IS NULL OR p.activo = :activo)")
     List<PreguntasFrecuentes> buscarPorFiltros(@Param("categoria") String categoria, @Param("activo") Boolean activo);
 
+    List<PreguntasFrecuentes> findByActivoTrue();
+
 }

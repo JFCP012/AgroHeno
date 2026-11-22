@@ -22,9 +22,10 @@ public class ClienteService {
     @Autowired
     private ClienteRepositorio clienteRepositorio;
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
+
     public Cliente guardarCliente(String clienteJson, MultipartFile archivoImagen) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        Cliente cliente = objectMapper.readValue(clienteJson, Cliente.class);
+        Cliente cliente = OBJECT_MAPPER.readValue(clienteJson, Cliente.class);
         return guardarCliente(cliente, archivoImagen);
     }
 
@@ -85,8 +86,7 @@ public class ClienteService {
     }
 
     public Cliente actualizarCliente(String clienteJson, MultipartFile archivoImagen) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        Cliente cliente = objectMapper.readValue(clienteJson, Cliente.class);
+        Cliente cliente = OBJECT_MAPPER.readValue(clienteJson, Cliente.class);
         return actualizarCliente(cliente, archivoImagen);
     }
 
