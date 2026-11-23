@@ -117,4 +117,12 @@ public class TicketControlador {
         }
     }
 
+    @GetMapping("/buscarPorClienteYEstado")
+    public List<Ticket> buscarPorClienteYEstado(
+            @RequestParam String cedula,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String categoria) {
+        return this.ticketServise.buscarPorCedulaClienteYEstado(cedula, estado, categoria);
+    }
+
 }

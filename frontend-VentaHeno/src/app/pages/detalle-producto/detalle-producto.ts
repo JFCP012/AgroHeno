@@ -26,7 +26,6 @@ export class DetalleProducto implements OnInit {
   @Input() id!: string;
 
   ngOnInit(): void {
-    console.log('El ID del heno recibido es:', this.id);
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
       const id = +idParam;

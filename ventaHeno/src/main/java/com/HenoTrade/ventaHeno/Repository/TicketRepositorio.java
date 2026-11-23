@@ -11,9 +11,22 @@ import com.HenoTrade.ventaHeno.Entity.Ticket;
 public interface TicketRepositorio extends JpaRepository<Ticket, Long> {
 
        // 2. Consulta nativa segura para monitorear tickets de un cliente (con o sin
-       // factura asociada)
-       @Query(value = "SELECT t.* FROM ticket t LEFT JOIN factura f ON t.id_factura = f.id_factura WHERE t.cedula_cliente = :cedula OR f.cedulac = :cedula ORDER BY t.fecha_inicio DESC", nativeQuery = true)
+       // factura asociada), ordenados por fecha de última actualización/resolución o
+       // inicio descendente
+       @Query(value = "SELECT t.* FROM ticket t LEFT JOIN factura f ON t.id_factura = f.id_factura WHERE t.cedula_cliente = :cedula OR f.cedulac = :cedula ORDER BY COALESCE(t.fecha_actualizacion, t.fecha_fin, t.fecha_inicio) DESC, t.fecha_inicio DESC", nativeQuery = true)
        List<Ticket> buscarPorCedulaCliente(@Param("cedula") String cedula);
+
+       @Query(value = "SELECT t.* FROM ticket t LEFT JOIN factura f ON t.id_factura = f.id_factura " +
+                      "WHERE (t.cedula_cliente = :cedula OR f.cedulac = :cedula) " +
+                      "AND (CAST(:estado AS VARCHAR) IS NULL OR CAST(:estado AS VARCHAR) = '' OR UPPER(t.estado_ticket) = UPPER(CAST(:estado AS VARCHAR))) " +
+                      "AND (CAST(:categoria AS VARCHAR) IS NULL OR CAST(:categoria AS VARCHAR) = '' OR UPPER(t.categoria_ticket) = UPPER(CAST(:categoria AS VARCHAR))) " +
+                      "ORDER BY COALESCE(t.fecha_actualizacion, t.fecha_fin, t.fecha_inicio) DESC, t.fecha_inicio DESC", nativeQuery = true)
+       List<Ticket> buscarPorCedulaClienteYEstado(@Param("cedula") String cedula, @Param("estado") String estado,
+                     @Param("categoria") String categoria);
+
+       default List<Ticket> buscarPorCedulaClienteYEstado(String cedula, String estado) {
+              return buscarPorCedulaClienteYEstado(cedula, estado, null);
+       }
 
        @Query("SELECT t FROM Ticket t WHERE t.tecnicoAsignado.cedulaU = :cedula AND t.fechaFin IS NOT NULL " +
                      "AND (:anio IS NULL OR YEAR(t.fechaFin) = :anio) AND (:mes IS NULL OR MONTH(t.fechaFin) = :mes) " +

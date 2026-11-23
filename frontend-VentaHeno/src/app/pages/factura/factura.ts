@@ -171,7 +171,6 @@ export class Factura implements OnInit, OnDestroy {
             this.factura.direccionC = cliente.direccion;
           }
           this.clienteSeleccionado = cliente;
-          console.log('Cliente encontrado y asociado:', cliente);
         }
         this.cdr.detectChanges();
       },

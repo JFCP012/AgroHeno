@@ -477,10 +477,12 @@
     grid-template-columns: 1fr;
     gap: 1rem;
   }
+
   .item-thumb-box {
     width: 60px;
     height: 60px;
   }
+
   .item-actions {
     justify-content: flex-end;
   }

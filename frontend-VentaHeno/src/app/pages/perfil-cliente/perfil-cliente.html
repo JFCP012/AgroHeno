@@ -76,7 +76,7 @@
           <path d="M2 9.5h20"></path>
         </svg>
         Mis Tickets
-        <span class="tab-counter-badge" *ngIf="ticketsCliente.length > 0">{{ ticketsCliente.length }}</span>
+        <span class="tab-counter-badge" *ngIf="totalTicketsCliente > 0">{{ totalTicketsCliente }}</span>
       </button>
 
       <button class="tab-btn" [class.active]="pestanaActiva === 'editar'" (click)="cambiarPestana('editar')">
@@ -271,18 +271,82 @@
         <button class="btn-primary-action" (click)="irACrearTicket()">+ Radicar Ticket</button>
       </div>
 
+      <!-- Filtro y Buscador de tickets -->
+      <div class="tickets-filter-bar" *ngIf="!cargandoTickets && (ticketsCliente.length > 0 || hayFiltrosActivos)">
+        
+        <!-- Buscador de texto -->
+        <div class="search-input-wrapper">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input 
+            type="text" 
+            [(ngModel)]="filtroBusquedaTickets" 
+            placeholder="Buscar por radicado o palabras clave..." 
+            class="input-search-tickets"
+          />
+          <button *ngIf="filtroBusquedaTickets" type="button" class="btn-clear-search" (click)="filtroBusquedaTickets = ''" title="Limpiar búsqueda">✕</button>
+        </div>
+
+        <!-- Grupo de selectores para Estado y Categoría -->
+        <div class="tickets-select-group">
+          <!-- Filtro por Estado -->
+          <div class="filter-select-wrapper">
+            <label class="filter-label" for="selectEstado">Estado:</label>
+            <select id="selectEstado" class="filter-select" [(ngModel)]="filtroEstado" (change)="aplicarFiltrosServidor()">
+              <option value="TODOS">Todos los estados</option>
+              <option value="RADICADO">Radicado</option>
+              <option value="EN_ANALISIS">En Análisis</option>
+              <option value="RESUELTO">Resuelto</option>
+            </select>
+          </div>
+
+          <!-- Filtro por Categoría -->
+          <div class="filter-select-wrapper">
+            <label class="filter-label" for="selectCategoria">Categoría:</label>
+            <select id="selectCategoria" class="filter-select" [(ngModel)]="filtroCategoria" (change)="aplicarFiltrosServidor()">
+              <option value="TODAS">Todas las categorías</option>
+              <option value="CALIDAD_FORRAJE">Calidad de Forraje</option>
+              <option value="LOGISTICA">Logística y Envíos</option>
+              <option value="FACTURACION">Facturación y Pagos</option>
+              <option value="SOPORTE_WEB">Soporte de Plataforma</option>
+            </select>
+          </div>
+
+          <!-- Botón para limpiar todos los filtros -->
+          <button *ngIf="hayFiltrosActivos" type="button" class="btn-reset-filters" (click)="limpiarTodosLosFiltros()" title="Restablecer filtros">
+            ↺ Limpiar filtros
+          </button>
+        </div>
+
+        <div class="tickets-count-hint">
+          Mostrando {{ ticketsFiltrados.length }} tickets
+        </div>
+      </div>
+
+      <!-- Sin resultados para la búsqueda o filtro -->
+      <div class="facturas-empty" *ngIf="!cargandoTickets && (ticketsCliente.length === 0 || ticketsFiltrados.length === 0) && hayFiltrosActivos">
+        <div class="empty-icon">🔍</div>
+        <h3>No se encontraron tickets</h3>
+        <p>No hay tickets que coincidan con los filtros aplicados.</p>
+        <button class="btn-primary-action" (click)="limpiarTodosLosFiltros()">Restablecer filtros</button>
+      </div>
+
       <!-- Contenido de Tickets (mismo diseño sobrio y corporativo que Facturas) -->
-      <div class="facturas-list" *ngIf="!cargandoTickets && ticketsCliente.length > 0">
-        <div class="factura-card" *ngFor="let t of ticketsCliente">
+      <div class="facturas-list" *ngIf="!cargandoTickets && ticketsFiltrados.length > 0">
+        <div class="factura-card" *ngFor="let t of ticketsFiltrados">
 
           <!-- Header idéntico a factura-card-header -->
           <div class="factura-card-header">
             <div class="factura-info-main">
               <span class="factura-id">{{ t.codigoRadicado || ('Ticket #' + t.idTicket) }}</span>
-              <span class="factura-fecha" *ngIf="t.fechaInicio">{{ t.fechaInicio | date:'yyyy-MM-dd' }}</span>
+              <span class="factura-fecha" *ngIf="t.fechaInicio">Radicado: {{ t.fechaInicio | date:'yyyy-MM-dd HH:mm' }}</span>
               <span class="factura-fecha" *ngIf="t.factura">• Factura #{{ t.factura.idFactura }}</span>
             </div>
-            <span class="factura-total-badge">{{ (t.estadoTicket || 'RADICADO').replace('_', ' ') }}</span>
+            <span class="factura-total-badge" [ngClass]="'badge-' + (t.estadoTicket || 'RADICADO').toLowerCase().replace('_', '-')">
+              {{ (t.estadoTicket || 'RADICADO').replace('_', ' ') }}
+            </span>
           </div>
 
           <!-- Cuerpo idéntico a factura-card-body -->
@@ -324,8 +388,9 @@
             <div class="factura-shipping">
               <span>Estado del caso: <strong>{{ (t.estadoTicket || 'RADICADO').replace('_', ' ') }}</strong></span>
             </div>
-            <span class="ticket-footer-date" *ngIf="t.fechaFin">Resuelto el {{ t.fechaFin | date:'yyyy-MM-dd' }}</span>
-            <span class="ticket-footer-date" *ngIf="!t.fechaFin">En trámite por equipo técnico</span>
+            <span class="ticket-footer-date" *ngIf="t.fechaFin">Resuelto el {{ t.fechaFin | date:'yyyy-MM-dd HH:mm' }}</span>
+            <span class="ticket-footer-date" *ngIf="!t.fechaFin && t.fechaActualizacion">Actualizado el {{ t.fechaActualizacion | date:'yyyy-MM-dd HH:mm' }}</span>
+            <span class="ticket-footer-date" *ngIf="!t.fechaFin && !t.fechaActualizacion">En trámite por equipo técnico</span>
           </div>
 
         </div>

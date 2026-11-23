@@ -41,6 +41,17 @@ export class TicketService {
     return this.http.get<Ticket[]>(`${this.apiUrl}/cliente/${cedula}`);
   }
 
+  buscarPorClienteYEstado(cedula: string, estado?: string, categoria?: string): Observable<Ticket[]> {
+    let params = new HttpParams().set('cedula', cedula);
+    if (estado && estado !== 'TODOS') {
+      params = params.set('estado', estado);
+    }
+    if (categoria && categoria !== 'TODAS') {
+      params = params.set('categoria', categoria);
+    }
+    return this.http.get<Ticket[]>(`${this.apiUrl}/buscarPorClienteYEstado`, { params });
+  }
+
   obtenerTicketsPorFactura(idFactura: number): Observable<Ticket[]> {
     return this.http.get<Ticket[]>(`${this.apiUrl}/factura/${idFactura}`);
   }

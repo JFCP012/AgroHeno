@@ -900,6 +900,151 @@
 }
 
 /* ── Pestaña Mis Tickets en Perfil (Diseño Limpio AgroHeno) ───────── */
+.tickets-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  background: #ffffff;
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+  max-width: 360px;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.85rem;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.input-search-tickets {
+  width: 100%;
+  padding: 0.55rem 2rem 0.55rem 2.4rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: #1e293b;
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-search-tickets:focus {
+  border-color: #036c39;
+  box-shadow: 0 0 0 3px rgba(3, 108, 57, 0.1);
+}
+
+.btn-clear-search {
+  position: absolute;
+  right: 0.65rem;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.btn-clear-search:hover {
+  color: #475569;
+}
+
+.tickets-select-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.filter-select-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.filter-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.filter-select {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #1e293b;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filter-select:focus {
+  border-color: #036c39;
+  box-shadow: 0 0 0 2px rgba(3, 108, 57, 0.15);
+}
+
+.btn-reset-filters {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-reset-filters:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.tickets-count-hint {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-resuelto {
+  background: rgba(3, 108, 57, 0.1) !important;
+  color: #036c39 !important;
+  border-color: rgba(3, 108, 57, 0.2) !important;
+}
+
+.badge-en-analisis {
+  background: rgba(147, 51, 234, 0.08) !important;
+  color: #6b21a8 !important;
+  border-color: rgba(147, 51, 234, 0.2) !important;
+}
+
+.badge-radicado {
+  background: rgba(202, 138, 4, 0.1) !important;
+  color: #a16207 !important;
+  border-color: rgba(202, 138, 4, 0.25) !important;
+}
+
 .ticket-titulo-clean {
   font-size: 1.05rem;
   font-weight: 700;
