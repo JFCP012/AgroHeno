@@ -25,6 +25,7 @@ export class App implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   esRutaExcluida = false;
+  esRutaInterna = false;
   mostrarLoginModal = false;
   cargandoLogin = false;
   clienteLogueado: Cliente | null = null;
@@ -161,7 +162,7 @@ export class App implements OnInit {
 
   private actualizarEstadoExclusion(url: string) {
     const current = (url || (typeof window !== 'undefined' ? window.location.pathname : '') || '').toLowerCase();
-    this.esRutaExcluida = current.includes('admin') ||
+    this.esRutaInterna = current.includes('admin') ||
       current.includes('usuario') ||
       current.includes('crear-producto') ||
       current.includes('reportes') ||
@@ -169,6 +170,9 @@ export class App implements OnInit {
       current.includes('gestion-tickets') ||
       current.includes('asesor-tickets') ||
       current.includes('gestion-preguntas-frecuentes') ||
+      current.includes('dashboard-kpis');
+
+    this.esRutaExcluida = this.esRutaInterna ||
       current.includes('preguntas-frecuentes') ||
       current.includes('ayuda');
   }
