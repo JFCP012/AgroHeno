@@ -38,6 +38,7 @@ export class AdminService {
               this.logoutAdmin();
               throw new Error('El usuario se encuentra inactivo. Comuníquese con el administrador.');
             }
+            localStorage.removeItem('clienteActivo');
             sessionStorage.setItem('usuario', JSON.stringify(response));
             const rawRol = (response.rol || 'admin').trim().toLowerCase();
             const rol = rawRol.includes('admin') ? 'admin' : (rawRol.includes('asesor') ? 'asesor' : 'gestorTickets');

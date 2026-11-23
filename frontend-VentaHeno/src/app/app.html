@@ -15,7 +15,7 @@
 </div>
 
 <!-- Círculo de Usuario Interno / Admin (Esquina Superior Derecha en vistas administrativas) -->
-<div class="user-avatar-btn" (click)="toggleAdminMenu()" *ngIf="esRutaExcluida && usuarioAdminLogueado"
+<div class="user-avatar-btn" (click)="toggleAdminMenu()" *ngIf="esRutaInterna && usuarioAdminLogueado"
     [title]="usuarioAdminLogueado.nombre + ' (' + usuarioAdminLogueado.rol + ')'">
     <img *ngIf="usuarioAdminLogueado.imagen" [src]="usuarioAdminLogueado.imagen" alt="Foto de Perfil" class="avatar-photo" />
 
@@ -27,7 +27,7 @@
 </div>
 
 <!-- Menú desplegable de identificación de cuenta interna activa -->
-<div class="admin-profile-popover" *ngIf="esRutaExcluida && usuarioAdminLogueado && mostrarAdminMenu" (click)="$event.stopPropagation()">
+<div class="admin-profile-popover" *ngIf="esRutaInterna && usuarioAdminLogueado && mostrarAdminMenu" (click)="$event.stopPropagation()">
     <div class="admin-popover-header">
         <div class="admin-popover-avatar">
             <img *ngIf="usuarioAdminLogueado.imagen" [src]="usuarioAdminLogueado.imagen" alt="Foto de Perfil" class="avatar-photo" />
