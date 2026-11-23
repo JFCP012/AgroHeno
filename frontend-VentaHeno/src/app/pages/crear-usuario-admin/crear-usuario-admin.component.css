@@ -184,7 +184,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state p {
@@ -627,6 +629,7 @@
     align-items: flex-start;
     gap: 1rem;
   }
+
   .item-actions {
     width: 100%;
     justify-content: flex-end;

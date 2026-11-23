@@ -37,10 +37,32 @@ export class PerfilCliente implements OnInit, OnDestroy {
 
   // Tickets de Soporte
   ticketsCliente: Ticket[] = [];
+  totalTicketsCliente: number = 0;
   facturasConTicket = new Set<number>();
   ticketsPorFactura = new Map<number, Ticket>();
   cargandoTickets: boolean = false;
   errorTickets: string | null = null;
+  filtroBusquedaTickets: string = '';
+  filtroEstado: string = 'TODOS';
+  filtroCategoria: string = 'TODAS';
+
+  get hayFiltrosActivos(): boolean {
+    return this.filtroEstado !== 'TODOS' || this.filtroCategoria !== 'TODAS' || !!this.filtroBusquedaTickets.trim();
+  }
+
+  get ticketsFiltrados(): Ticket[] {
+    if (!this.filtroBusquedaTickets || !this.filtroBusquedaTickets.trim()) {
+      return this.ticketsCliente;
+    }
+    const term = this.filtroBusquedaTickets.toLowerCase().trim();
+    return this.ticketsCliente.filter(t =>
+      (t.codigoRadicado && t.codigoRadicado.toLowerCase().includes(term)) ||
+      (t.tituloTicket && t.tituloTicket.toLowerCase().includes(term)) ||
+      (t.descripcionTicket && t.descripcionTicket.toLowerCase().includes(term)) ||
+      (t.estadoTicket && t.estadoTicket.toLowerCase().includes(term)) ||
+      (t.categoriaTicket && t.categoriaTicket.toLowerCase().includes(term))
+    );
+  }
 
   // Editar Perfil
   clienteEdit = {
@@ -136,28 +158,46 @@ export class PerfilCliente implements OnInit, OnDestroy {
     });
   }
 
-  cargarTicketsCliente() {
+  cargarTicketsCliente(esInicial: boolean = false) {
     if (!this.cliente || !this.cliente.cedula) return;
 
     this.cargandoTickets = true;
     this.errorTickets = null;
 
-    this.ticketService.obtenerTicketsPorCliente(this.cliente.cedula).subscribe({
-      next: (tickets) => {
-        this.ticketsCliente = tickets || [];
-        this.facturasConTicket.clear();
-        this.ticketsPorFactura.clear();
+    const estadoParam = this.filtroEstado && this.filtroEstado !== 'TODOS' ? this.filtroEstado : undefined;
+    const categoriaParam = this.filtroCategoria && this.filtroCategoria !== 'TODAS' ? this.filtroCategoria : undefined;
 
-        this.ticketsCliente.forEach(t => {
-          const idFac = (t.factura as any)?.idFactura || (typeof t.factura === 'number' ? t.factura : null);
-          if (idFac) {
-            const numId = Number(idFac);
-            this.facturasConTicket.add(numId);
-            if (!this.ticketsPorFactura.has(numId)) {
-              this.ticketsPorFactura.set(numId, t);
-            }
-          }
+    this.ticketService.buscarPorClienteYEstado(this.cliente.cedula, estadoParam, categoriaParam).subscribe({
+      next: (tickets) => {
+        const lista = tickets || [];
+        // Ordenar por fecha más reciente (actualización, fin o inicio) para destacar tickets resueltos o modificados
+        lista.sort((a, b) => {
+          const parseTime = (t: Ticket) => {
+            const d = t.fechaActualizacion || t.fechaFin || t.fechaInicio;
+            return d ? new Date(d).getTime() : 0;
+          };
+          return parseTime(b) - parseTime(a);
         });
+
+        this.ticketsCliente = lista;
+
+        // Si no hay filtros aplicados, actualizamos la cuenta global y mapa de facturas
+        if (!estadoParam && !categoriaParam) {
+          this.totalTicketsCliente = lista.length;
+          this.facturasConTicket.clear();
+          this.ticketsPorFactura.clear();
+
+          this.ticketsCliente.forEach(t => {
+            const idFac = (t.factura as any)?.idFactura || (typeof t.factura === 'number' ? t.factura : null);
+            if (idFac) {
+              const numId = Number(idFac);
+              this.facturasConTicket.add(numId);
+              if (!this.ticketsPorFactura.has(numId)) {
+                this.ticketsPorFactura.set(numId, t);
+              }
+            }
+          });
+        }
 
         this.cargandoTickets = false;
         this.cdr.detectChanges();
@@ -169,6 +209,17 @@ export class PerfilCliente implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  aplicarFiltrosServidor() {
+    this.cargarTicketsCliente(false);
+  }
+
+  limpiarTodosLosFiltros() {
+    this.filtroEstado = 'TODOS';
+    this.filtroCategoria = 'TODAS';
+    this.filtroBusquedaTickets = '';
+    this.cargarTicketsCliente(false);
   }
 
   tieneTicketFactura(idFactura: number): boolean {

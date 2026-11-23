@@ -366,4 +366,17 @@ public class TicketServise {
         return ticketGuardado;
     }
 
+    public List<Ticket> buscarPorCedulaClienteYEstado(String cedula, String estado) {
+        return buscarPorCedulaClienteYEstado(cedula, estado, null);
+    }
+
+    public List<Ticket> buscarPorCedulaClienteYEstado(String cedula, String estado, String categoria) {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            return List.of();
+        }
+        String estadoLimpio = (estado != null && !estado.trim().isEmpty()) ? estado.trim() : null;
+        String categoriaLimpia = (categoria != null && !categoria.trim().isEmpty()) ? categoria.trim() : null;
+        return this.ticketRepositorio.buscarPorCedulaClienteYEstado(cedula.trim(), estadoLimpio, categoriaLimpia);
+    }
+
 }

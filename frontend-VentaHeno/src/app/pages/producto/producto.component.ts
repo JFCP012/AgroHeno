@@ -54,7 +54,6 @@ export class ProductoComponent implements OnInit {
     this.henoService.buscarHenos().subscribe({
       next: (data) => {
         this.henos = data.filter((h: Heno) => h.stock > 0 && h.estado !== 'Inactivo');
-        console.log(this.henos);
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -69,7 +68,6 @@ export class ProductoComponent implements OnInit {
     this.henoService.buscarHenosPorTipo(nombre).subscribe({
       next: (data) => {
         this.henos = data.filter((h: Heno) => h.stock > 0 && h.estado !== 'Inactivo');
-        console.log('Henos filtrados:', this.henos);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -164,7 +162,6 @@ export class ProductoComponent implements OnInit {
     this.henoService.buscarHenosPorNombre(nombre).subscribe({
       next: (data) => {
         this.henos = data.filter((h: Heno) => h.stock > 0 && h.estado !== 'Inactivo');
-        console.log('Henos filtrados:', this.henos);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -180,7 +177,6 @@ export class ProductoComponent implements OnInit {
       this.errorMsg = 'ID de producto no válido';
       return;
     }
-    console.log('ID:', idHeno);
     this.router.navigate(['/detalle-producto', idHeno]);
   }
 

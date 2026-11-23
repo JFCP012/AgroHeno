@@ -423,17 +423,37 @@
   display: inline-block;
 }
 
-.prio-critica { color: #e53e3e; }
-.prio-critica .dot { background-color: #e53e3e; }
+.prio-critica {
+  color: #e53e3e;
+}
 
-.prio-alta { color: #dd6b20; }
-.prio-alta .dot { background-color: #dd6b20; }
+.prio-critica .dot {
+  background-color: #e53e3e;
+}
 
-.prio-media { color: #d69e2e; }
-.prio-media .dot { background-color: #d69e2e; }
+.prio-alta {
+  color: #dd6b20;
+}
 
-.prio-baja { color: #38a169; }
-.prio-baja .dot { background-color: #38a169; }
+.prio-alta .dot {
+  background-color: #dd6b20;
+}
+
+.prio-media {
+  color: #d69e2e;
+}
+
+.prio-media .dot {
+  background-color: #d69e2e;
+}
+
+.prio-baja {
+  color: #38a169;
+}
+
+.prio-baja .dot {
+  background-color: #38a169;
+}
 
 /* ESTADO (Badge sobrio tenue, sin colores estridentes) */
 .status-badge {
@@ -451,9 +471,21 @@
   color: #8c6814;
   border: 1px solid rgba(204, 162, 67, 0.45);
 }
-.badge-analisis { background: #faf5ff; color: #6b21a8; }
-.badge-resuelto { background: #f0fdf4; color: #15803d; }
-.badge-default { background: #f8fafc; color: #64748b; }
+
+.badge-analisis {
+  background: #faf5ff;
+  color: #6b21a8;
+}
+
+.badge-resuelto {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.badge-default {
+  background: #f8fafc;
+  color: #64748b;
+}
 
 /* FECHAS / LÍMITE SLA */
 .td-fechas {

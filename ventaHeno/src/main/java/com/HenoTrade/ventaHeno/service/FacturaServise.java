@@ -25,9 +25,7 @@ import com.HenoTrade.ventaHeno.dto.DetalleVentaDTO;
 import com.HenoTrade.ventaHeno.dto.FacturaReporteDTO;
 import com.HenoTrade.ventaHeno.dto.ReporteVentaMensualDTO;
 import com.HenoTrade.ventaHeno.dto.ReporteFacturasHenoDTO;
-import com.HenoTrade.ventaHeno.dto.ReporteVentaAnimalDTO;
 import com.HenoTrade.ventaHeno.dto.ReporteFacturasAnimalDTO;
-import com.HenoTrade.ventaHeno.dto.VentaAnimalDTO;
 import com.HenoTrade.ventaHeno.dto.ReporteVentaClienteDTO;
 import com.HenoTrade.ventaHeno.dto.DetalleFacturaReporteDTO;
 
