@@ -1,0 +1,82 @@
+<header class="admin-top-header">
+  <div class="admin-header-inner">
+    <!-- Left: back to admin panel -->
+    <div class="admin-header-left">
+      <button class="btn-admin-back" (click)="volverAdmin()">← Volver al Panel</button>
+    </div>
+    <!-- Center: Logo -->
+    <div class="admin-header-branding" (click)="volverAdmin()">
+      <img src="assets/Imagenes/Logo2.png" alt="AgroHeno Logo" class="admin-header-logo">
+      <div class="admin-brand-text">
+        <span class="brand-main">AgroHeno</span>
+        <span class="brand-sub">CENTRO DE REPORTES</span>
+      </div>
+    </div>
+    <div class="admin-header-right"></div>
+  </div>
+</header>
+
+<div class="admin-dashboard-container">
+  <div class="dashboard-title-area">
+    <h1>Reportes de Ventas</h1>
+    <p>Consulta el historial de facturación segmentado y exporta tus informes en PDF o Excel</p>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Tarjeta 1: Ventas por Mes -->
+    <div class="dashboard-card highlight">
+      <div class="card-icon">
+        <img src="assets/Imagenes/Calendario.png" alt="Ventas por Mes" class="card-img-icon">
+      </div>
+      <div class="card-content">
+        <h2>Ventas por Mes</h2>
+        <p>Genera reportes detallados de las ventas organizadas de forma mensual.</p>
+        <button class="btn-dashboard-action" (click)="irAReportesMes()">
+          <span>Generar Reporte</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tarjeta 2: Ventas por Animal -->
+    <div class="dashboard-card highlight">
+      <div class="card-icon">
+        <img src="assets/Imagenes/Todos_adm.png" alt="Ventas por Animal" class="card-img-icon">
+      </div>
+      <div class="card-content">
+        <h2>Ventas por Animal</h2>
+        <p>Analiza el volumen de facturación segmentado por el tipo de animal destino.</p>
+        <button class="btn-dashboard-action" (click)="irAReportesAnimal()">
+          <span>Generar Reporte</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tarjeta 3: Ventas por Paca -->
+    <div class="dashboard-card highlight">
+      <div class="card-icon">
+        <img src="assets/Imagenes/heno_admin.png" alt="Ventas por Paca" class="card-img-icon">
+      </div>
+      <div class="card-content">
+        <h2>Ventas por Paca</h2>
+        <p>Analiza el volumen de facturación segmentado por el tipo de heno vendido.</p>
+        <button class="btn-dashboard-action" (click)="irAReportesPaca()">
+          <span>Generar Reporte</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tarjeta 4: Ventas por Cliente -->
+    <div class="dashboard-card highlight">
+      <div class="card-icon">
+        <img src="assets/Imagenes/Clientes.png" alt="Ventas por Cliente" class="card-img-icon">
+      </div>
+      <div class="card-content">
+        <h2>Ventas por Cliente</h2>
+        <p>Analiza las facturas y compras totales acumuladas por un cliente ingresando su cédula.</p>
+        <button class="btn-dashboard-action" (click)="irAReportesCliente()">
+          <span>Generar Reporte</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

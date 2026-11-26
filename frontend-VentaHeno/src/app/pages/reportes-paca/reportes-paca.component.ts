@@ -56,7 +56,7 @@ export class ReportesPacaComponent implements OnInit {
   }
 
   volverAdmin() {
-    this.router.navigate(['/admin']);
+    this.router.navigate(['/reportes']);
   }
 
   get facturasPaginadas() {

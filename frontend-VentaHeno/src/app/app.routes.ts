@@ -79,6 +79,11 @@ export const routes: Routes = [
         canActivate: [asesorTicketsGuard]
     },
     {
+        path: 'reportes',
+        loadComponent: () => import('./pages/reportes/reportes.component').then(m => m.ReportesComponent),
+        canActivate: [adminGuard]
+    },
+    {
         path: 'reportes-mes',
         loadComponent: () => import('./pages/reportes-mes/reportes-mes.component').then(m => m.ReportesMesComponent),
         canActivate: [adminGuard]

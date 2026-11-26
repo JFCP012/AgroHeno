@@ -48,12 +48,14 @@ body {
 }
 
 .admin-header-left {
+  grid-column: 1;
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
 
 .admin-header-right {
+  grid-column: 3;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -62,6 +64,7 @@ body {
 }
 
 .admin-header-branding {
+  grid-column: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -170,6 +173,10 @@ body {
   .admin-header-right {
     width: 100%;
     justify-content: center;
+  }
+
+  .admin-header-right:empty {
+    display: none;
   }
 
   .admin-header-logo {

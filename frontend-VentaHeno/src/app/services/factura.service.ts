@@ -15,4 +15,8 @@ export class FacturaService {
   procesarCompra(compraDTO: any): Observable<any> {
     return this.http.post<any>(this.apiUrl, compraDTO);
   }
+
+  descargarFacturaPdf(idFactura: number): Observable<Blob> {
+    return this.http.get(`${API_BASE_URL}/Factura/${idFactura}/pdf`, { responseType: 'blob' });
+  }
 }

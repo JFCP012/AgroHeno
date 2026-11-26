@@ -1,10 +1,8 @@
 <!-- HEADER SUPERIOR INSTITUCIONAL AGROHENO -->
 <header class="admin-top-header">
   <div class="admin-header-inner">
-    <!-- Left: Volver al Panel (solo si entra desde admin) y Cerrar sesión -->
-    <div class="admin-header-left" style="display: flex; gap: 0.75rem; align-items: center;">
+    <div class="admin-header-left">
       <button class="btn-admin-back" *ngIf="esAdmin" (click)="volverAlPanel()">← Volver al Panel</button>
-      <button class="btn-admin-logout" (click)="cerrarSesion()">Cerrar Sesión 🔓</button>
     </div>
     <!-- Center: Logotipo oficial -->
     <div class="admin-header-branding" (click)="esAdmin ? volverAlPanel() : null" [style.cursor]="esAdmin ? 'pointer' : 'default'">
@@ -14,10 +12,7 @@
         <span class="brand-sub">GESTIÓN DE TICKETS</span>
       </div>
     </div>
-    <!-- Right: Badge -->
-    <div class="admin-header-right">
-      <span class="admin-header-badge">{{ esAdmin ? 'Administrador 🔒' : 'Gestor Tickets 📋' }}</span>
-    </div>
+    <div class="admin-header-right"></div>
   </div>
 </header>
 

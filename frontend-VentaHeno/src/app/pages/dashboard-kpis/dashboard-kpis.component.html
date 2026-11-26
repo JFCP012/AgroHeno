@@ -1,11 +1,10 @@
 <!-- HEADER INSTITUCIONAL AGROHENO -->
 <header class="admin-top-header">
     <div class="admin-header-inner">
-        <div class="admin-header-left" style="display: flex; gap: 0.75rem; align-items: center;">
+        <div class="admin-header-left">
             <button class="btn-admin-back" (click)="volver()">
                 ← {{ esAdmin ? 'Volver al Panel' : 'Volver a Tickets' }}
             </button>
-            <button class="btn-admin-logout" (click)="cerrarSesion()">Cerrar Sesión 🔓</button>
         </div>
 
         <div class="admin-header-branding" (click)="volver()">
@@ -16,11 +15,7 @@
             </div>
         </div>
 
-        <div class="admin-header-right">
-            <span class="admin-header-badge">
-                {{ esAdmin ? 'Administrador 🔒' : 'Gestor Tickets 📋' }}
-            </span>
-        </div>
+        <div class="admin-header-right"></div>
     </div>
 </header>
 

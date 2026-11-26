@@ -81,7 +81,7 @@ export class ReportesAnimalComponent implements OnInit {
   }
 
   volverAdmin() { 
-    this.router.navigate(['/admin']); 
+    this.router.navigate(['/reportes']); 
   }
 
   get facturasPaginadas() {

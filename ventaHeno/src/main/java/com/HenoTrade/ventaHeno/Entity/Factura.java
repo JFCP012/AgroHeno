@@ -55,6 +55,9 @@ public class Factura {
     @Column(name = "telefonoC", nullable = false)
     private String telefonoC;
 
+    @Column(name = "correoC")
+    private String correoC;
+
     @Column(name = "envio", nullable = false)
     private double envio;
 

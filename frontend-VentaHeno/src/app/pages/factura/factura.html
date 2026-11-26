@@ -15,6 +15,9 @@
         <div class="success-icon">✅</div>
         <h2>¡Compra Realizada con Éxito!</h2>
         <p>Tu pedido ha sido procesado satisfactoriamente.</p>
+        <p *ngIf="factura.correoC" class="email-notice" style="color: #036c39; font-weight: 500; font-size: 0.95rem; margin-top: -0.5rem; margin-bottom: 1.5rem;">
+            📧 Hemos enviado la factura en PDF a <strong>{{ factura.correoC }}</strong>
+        </p>
         <div class="action-buttons">
             <button class="btn-secondary" (click)="descargarFacturaPDF()">Descargar Factura</button>
             <button class="btn-primary" (click)="volverInicio()">Volver a la tienda</button>
@@ -76,6 +79,14 @@
                             <small *ngIf="telefonoCtrl.errors?.['pattern']">Solo se permiten números en el
                                 teléfono.</small>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="correoC">Correo Electrónico <span
+                                style="font-weight: normal; font-size: 0.8rem; color: #718096; margin-left: 0.25rem;">(Para
+                                recibir tu factura en PDF)</span></label>
+                        <input type="email" id="correoC" name="correoC" [(ngModel)]="factura.correoC"
+                            placeholder="Ej: cliente@ejemplo.com" #correoCtrl="ngModel">
                     </div>
 
                     <div class="form-group delivery-options">

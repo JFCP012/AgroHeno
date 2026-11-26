@@ -1,9 +1,6 @@
 <header class="admin-top-header">
   <div class="admin-header-inner">
-    <!-- Left: back to store & logout -->
-    <div class="admin-header-left" style="display: flex; gap: 0.75rem; align-items: center;">
-      <button class="btn-admin-logout" (click)="cerrarSesion()">Cerrar Sesión 🔓</button>
-    </div>
+    <div class="admin-header-left"></div>
     <!-- Center: Logo -->
     <div class="admin-header-branding">
       <img src="assets/Imagenes/Logo2.png" alt="AgroHeno Logo" class="admin-header-logo">
@@ -12,10 +9,7 @@
         <span class="brand-sub">PANEL DE CONTROL</span>
       </div>
     </div>
-    <!-- Right: Badge -->
-    <div class="admin-header-right">
-      <span class="admin-header-badge">Admin Mode 🔒</span>
-    </div>
+    <div class="admin-header-right"></div>
   </div>
 </header>
 
@@ -40,71 +34,43 @@
 
     <!-- Tarjeta: Creación de Usuarios -->
     <div class="dashboard-card highlight">
-      <div class="card-icon"><img src="assets/Imagenes/CrearUsuario.png" alt="Icono Creación de Usuarios" class="card-img-icon">
+      <div class="card-icon"><img src="assets/Imagenes/CrearUsuario.png" alt="Icono Creación de Usuarios"
+          class="card-img-icon">
       </div>
       <div class="card-content">
         <h2>Creación de Usuarios</h2>
-        <p>Registra y administra nuevas cuentas de acceso para el personal: Administradores, Asesores y Gestores de Tickets.</p>
+        <p>Registra y administra nuevas cuentas de acceso para el personal: Administradores, Asesores y Gestores de
+          Tickets.</p>
         <button class="btn-dashboard-action" (click)="irAGestionUsuarios()">
           <span>Crear Usuarios</span>
         </button>
       </div>
     </div>
 
+    <!-- Tarjeta: Reportes -->
     <div class="dashboard-card highlight">
-      <div class="card-icon"><img src="assets/Imagenes/Calendario.png" alt="Icono" class="card-img-icon">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#a68336"
+          stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3v18h18" />
+          <rect x="7" y="12" width="3" height="6" rx="0.8" />
+          <rect x="12" y="8" width="3" height="10" rx="0.8" />
+          <rect x="17" y="5" width="3" height="13" rx="0.8" />
+        </svg>
       </div>
       <div class="card-content">
-        <h2>Ventas por Mes</h2>
-        <p>Genera reportes detallados de las ventas organizadas de forma mensual.</p>
-        <button class="btn-dashboard-action" (click)="irAReportesMes()">
-          <span>Generar Reporte</span>
+        <h2>Reportes</h2>
+        <p>Consulta y exporta reportes detallados de ventas por mes, por animal, por tipo de paca y por cliente.</p>
+        <button class="btn-dashboard-action" (click)="irAReportes()">
+          <span>Ver Reportes</span>
         </button>
       </div>
     </div>
 
-    <!-- Tarjeta 2: Reporte de Ventas por Animal -->
+    <!-- Tarjeta: Gestión de Tickets -->
     <div class="dashboard-card highlight">
-      <div class="card-icon"><img src="assets/Imagenes/Todos_adm.png" alt="Icono" class="card-img-icon">
-      </div>
-      <div class="card-content">
-        <h2>Ventas por Animal</h2>
-        <p>Analiza el volumen de facturación segmentado por el tipo de animal destino.</p>
-        <button class="btn-dashboard-action" (click)="irAReportesAnimal()">
-          <span>Generar Reporte</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Tarjeta 3: Reporte de Ventas por Paca -->
-    <div class="dashboard-card highlight">
-      <div class="card-icon"><img src="assets/Imagenes/heno_admin.png" alt="Icono" class="card-img-icon">
-      </div>
-      <div class="card-content">
-        <h2>Ventas por Paca</h2>
-        <p>Analiza el volumen de facturación segmentado por el tipo de heno vendido.</p>
-        <button class="btn-dashboard-action" (click)="irAReportesPaca()">
-          <span>Generar Reporte</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Tarjeta 4: Reporte de Ventas por Cliente -->
-    <div class="dashboard-card highlight">
-      <div class="card-icon"><img src="assets/Imagenes/Clientes.png" alt="Icono" class="card-img-icon">
-      </div>
-      <div class="card-content">
-        <h2>Ventas por Cliente</h2>
-        <p>Analiza las facturas y compras totales acumuladas por un cliente ingresando su cédula.</p>
-        <button class="btn-dashboard-action" (click)="irAReportesCliente()">
-          <span>Generar Reporte</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Tarjeta 5: Gestión de Tickets -->
-    <div class="dashboard-card highlight">
-      <div class="card-icon"><img src="assets/Imagenes/GestionarTickets.png" alt="Icono Gestión de Tickets" class="card-img-icon">
+      <div class="card-icon"><img src="assets/Imagenes/GestionarTickets.png" alt="Icono Gestión de Tickets"
+          class="card-img-icon">
       </div>
       <div class="card-content">
         <h2>Gestión de Tickets</h2>
