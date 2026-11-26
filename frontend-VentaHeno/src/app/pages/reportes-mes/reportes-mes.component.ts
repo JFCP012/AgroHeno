@@ -39,7 +39,7 @@ export class ReportesMesComponent implements OnInit {
   itemsPorPagina: number = 5;
 
   volverAdmin() {
-    this.router.navigate(['/admin']);
+    this.router.navigate(['/reportes']);
   }
 
   // Corta la lista completa de facturas para devolver solo las 5 correspondientes

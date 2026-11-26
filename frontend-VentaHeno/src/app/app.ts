@@ -167,6 +167,7 @@ export class App implements OnInit {
       current.includes('reportes') ||
       current.includes('gestion-henos') ||
       current.includes('gestion-tickets') ||
+      current.includes('dashboard-kpis') ||
       current.includes('asesor-tickets') ||
       current.includes('gestion-preguntas-frecuentes') ||
       current.includes('preguntas-frecuentes') ||

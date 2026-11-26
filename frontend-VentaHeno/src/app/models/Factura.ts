@@ -7,5 +7,6 @@ export interface Factura {
     cedulaC: string;
     direccionC: string;
     telefonoC: string;
+    correoC?: string;
     envio: number;
 }

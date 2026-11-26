@@ -39,7 +39,7 @@ export class ReportesClienteComponent implements OnInit {
   itemsPorPagina: number = 5;
 
   volverAdmin() {
-    this.router.navigate(['/admin']);
+    this.router.navigate(['/reportes']);
   }
 
   get facturasPaginadas() {

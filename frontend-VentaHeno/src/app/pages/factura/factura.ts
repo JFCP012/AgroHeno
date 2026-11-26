@@ -52,7 +52,8 @@ export class Factura implements OnInit, OnDestroy {
     nombreC: '',
     cedulaC: '',
     direccionC: '',
-    telefonoC: ''
+    telefonoC: '',
+    correoC: ''
   };
 
   tipoEntrega: 'bodega' | 'envio' = 'envio';
@@ -128,6 +129,9 @@ export class Factura implements OnInit, OnDestroy {
         this.factura.cedulaC = cliente.cedula || '';
         this.factura.nombreC = cliente.nombre || '';
         this.factura.telefonoC = cliente.telefono || '';
+        if (cliente.correo) {
+          this.factura.correoC = cliente.correo;
+        }
         if (cliente.direccion) {
           this.factura.direccionC = cliente.direccion;
         }
@@ -167,6 +171,9 @@ export class Factura implements OnInit, OnDestroy {
         if (cliente) {
           this.factura.nombreC = cliente.nombre;
           this.factura.telefonoC = cliente.telefono;
+          if (cliente.correo) {
+            this.factura.correoC = cliente.correo;
+          }
           if (cliente.direccion && this.tipoEntrega === 'envio') {
             this.factura.direccionC = cliente.direccion;
           }
@@ -320,10 +327,39 @@ export class Factura implements OnInit, OnDestroy {
 
   descargarFacturaPDF() {
     if (!this.ultimaCompra) return;
+    const f = this.ultimaCompra.facturaGuardada;
+
+    // Descarga exactamente el mismo PDF generado por el backend y enviado al correo
+    if (f?.idFactura) {
+      this.facturaService.descargarFacturaPdf(f.idFactura).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Factura_AgroHeno_${f.idFactura}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        },
+        error: () => {
+          this.generarFacturaPdfLocal();
+        }
+      });
+      return;
+    }
+
+    this.generarFacturaPdfLocal();
+  }
+
+  private generarFacturaPdfLocal() {
+    if (!this.ultimaCompra) return;
 
     try {
       const doc = new jsPDF();
       const f = this.ultimaCompra.facturaGuardada;
+      const fechaRaw = String(f.fechaFactura || this.factura.fechaFactura || '');
+      const fechaLimpia = fechaRaw.includes('T') ? fechaRaw.split('T')[0] : fechaRaw;
 
       this.pdfUtils.dibujarEncabezado(doc, this.logoData, 25, 40);
 
@@ -336,7 +372,7 @@ export class Factura implements OnInit, OnDestroy {
       doc.setFontSize(10);
       doc.setTextColor(71, 85, 105);
       doc.text(`N° Factura: ${f.idFactura || 'Pendiente'}`, 14, 60);
-      doc.text(`Fecha: ${f.fechaFactura || this.factura.fechaFactura}`, 14, 67);
+      doc.text(`Fecha: ${fechaLimpia}`, 14, 67);
       const tipoVenta = this.tipoEntrega === 'bodega' ? 'POS' : 'Online';
       doc.text(`Tipo de Venta: ${tipoVenta}`, 14, 74);
 
@@ -348,13 +384,14 @@ export class Factura implements OnInit, OnDestroy {
 
       doc.setFontSize(10);
       doc.setTextColor(71, 85, 105);
-      doc.text(`Nombre: ${f.nombreC || this.factura.nombreC}`, 120, 60);
-      doc.text(`Cédula/NIT: ${f.cedulaC || this.factura.cedulaC}`, 120, 67);
-      doc.text(`Teléfono: ${f.telefonoC || this.factura.telefonoC}`, 120, 74);
+      doc.text(`Nombre: ${f.nombreC || this.factura.nombreC}`, 120, 58);
+      doc.text(`Cédula/NIT: ${f.cedulaC || this.factura.cedulaC}`, 120, 65);
+      doc.text(`Teléfono: ${f.telefonoC || this.factura.telefonoC}`, 120, 72);
+      doc.text(`Correo: ${f.correoC || this.factura.correoC || 'No registrado'}`, 120, 79);
       // Dirección con salto de línea automático
       const direccion = `Dirección: ${f.direccionC || this.factura.direccionC}`;
       const direccionLines = doc.splitTextToSize(direccion, 75); // 75 = ancho máximo en mm
-      doc.text(direccionLines, 120, 81);
+      doc.text(direccionLines, 120, 86);
 
       // Tabla productos
       const tableBody = this.ultimaCompra.detalles.map((d: any) => {
@@ -372,7 +409,7 @@ export class Factura implements OnInit, OnDestroy {
       });
 
       autoTable(doc, {
-        startY: 90,
+        startY: 96,
         head: [['ID Producto', 'Tipo de Heno', 'Costo Unitario', 'Cantidad', 'Costo Total']],
         body: tableBody,
         theme: 'grid',

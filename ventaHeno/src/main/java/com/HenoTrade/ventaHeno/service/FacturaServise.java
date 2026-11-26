@@ -47,6 +47,9 @@ public class FacturaServise {
     @Autowired
     private ClienteRepositorio clienteRepositorio;
 
+    @Autowired(required = false)
+    private EmailService emailService;
+
     public Factura guardarFactura(Factura factura) {
         return this.facturaRepositorio.save(factura);
     }
@@ -95,6 +98,19 @@ public class FacturaServise {
         if (factura.getCliente() != null && factura.getCliente().getCedula() != null) {
             Cliente cliente = clienteRepositorio.findById(factura.getCliente().getCedula()).orElse(null);
             factura.setCliente(cliente);
+        }
+
+        // Obtener correo del cliente si no vino explícito en la factura
+        if (factura.getCorreoC() == null || factura.getCorreoC().trim().isEmpty()) {
+            if (factura.getCliente() != null && factura.getCliente().getCorreo() != null) {
+                factura.setCorreoC(factura.getCliente().getCorreo());
+            } else if (factura.getCedulaC() != null) {
+                clienteRepositorio.findById(factura.getCedulaC()).ifPresent(c -> {
+                    if (c.getCorreo() != null && !c.getCorreo().trim().isEmpty()) {
+                        factura.setCorreoC(c.getCorreo());
+                    }
+                });
+            }
         }
 
         // 5. Validaciones previas de todos los productos en una sola consulta batch (sin N+1)
@@ -164,7 +180,31 @@ public class FacturaServise {
         henoRepositorio.saveAll(henosModificados);
         detalleVentaRepositorio.saveAll(detallesAGuardar);
 
+        // 8. Envío asíncrono de la factura en formato PDF al correo electrónico del cliente
+        String correoDestino = facturaGuardada.getCorreoC();
+        if (emailService != null && correoDestino != null && !correoDestino.trim().isEmpty()) {
+            try {
+                emailService.enviarFacturaConPdf(facturaGuardada, detallesAGuardar, correoDestino);
+            } catch (Exception e) {
+                // EmailService gestiona sus propias excepciones de forma segura y es @Async,
+                // asegurando que la transacción de compra nunca se interrumpa.
+            }
+        }
+
         return facturaGuardada;
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] obtenerPdfFactura(Long idFactura) {
+        if (idFactura == null || emailService == null) {
+            return null;
+        }
+        Factura factura = facturaRepositorio.findById(idFactura).orElse(null);
+        if (factura == null) {
+            return null;
+        }
+        List<DetalleVenta> detalles = detalleVentaRepositorio.findByFacturaIdFacturaIn(List.of(idFactura));
+        return emailService.generarFacturaPdf(factura, detalles);
     }
 
     private Map<Long, List<DetalleVenta>> obtenerDetallesPorFacturas(List<Factura> facturas) {

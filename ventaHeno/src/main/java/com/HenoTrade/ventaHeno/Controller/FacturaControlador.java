@@ -3,8 +3,12 @@ package com.HenoTrade.ventaHeno.Controller;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,5 +42,17 @@ public class FacturaControlador {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error inesperado al procesar la compra: " + e.getMessage()));
         }
+    }
+
+    @GetMapping("/{idFactura}/pdf")
+    public ResponseEntity<byte[]> descargarFacturaPdf(@PathVariable Long idFactura) {
+        byte[] pdfBytes = this.facturaServise.obtenerPdfFactura(idFactura);
+        if (pdfBytes == null || pdfBytes.length == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"Factura_AgroHeno_" + idFactura + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
     }
 }
