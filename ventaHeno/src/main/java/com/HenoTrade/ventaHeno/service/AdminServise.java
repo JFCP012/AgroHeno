@@ -153,9 +153,15 @@ public class AdminServise {
         return this.repositorio.save(usuario);
     }
 
+    @org.springframework.beans.factory.annotation.Value("${agroheno.admin.base.cedula:1000000000}")
+    private Long cedulaAdminBase;
+
     public Usuario cambiarEstado(Long cedulaU) {
         if (cedulaU == null) {
             throw new IllegalArgumentException("La cédula del usuario es obligatoria.");
+        }
+        if (cedulaU.equals(cedulaAdminBase)) {
+            throw new IllegalArgumentException("El usuario administrador base del sistema no puede ser desactivado.");
         }
         Usuario usuario = this.repositorio.findById(cedulaU).orElseThrow(
                 () -> new IllegalArgumentException("No se encontró ningún usuario con la cédula " + cedulaU)
