@@ -41,9 +41,13 @@ export class GestionTicketsComponent implements OnInit, OnDestroy {
   totalResueltos: number = 0;
   totalCriticos: number = 0;
 
-  // Modal de Detalle
+  // Modal de Detalle y Edición de Prioridad
   ticketSeleccionado: Ticket | null = null;
   mostrarModalDetalle: boolean = false;
+  prioridadEditada: string = 'MEDIA';
+  guardandoPrioridad: boolean = false;
+  mensajeExitoPrioridad: string | null = null;
+  errorPrioridad: string | null = null;
 
   // Modal de Asignación de Asesor
   mostrarModalAsignar: boolean = false;
@@ -287,6 +291,10 @@ export class GestionTicketsComponent implements OnInit, OnDestroy {
 
   abrirDetalle(ticket: Ticket): void {
     this.ticketSeleccionado = ticket;
+    this.prioridadEditada = (ticket.prioridad || 'MEDIA').toUpperCase();
+    this.guardandoPrioridad = false;
+    this.mensajeExitoPrioridad = null;
+    this.errorPrioridad = null;
     this.mostrarModalDetalle = true;
     this.cdr.detectChanges();
   }
@@ -294,7 +302,49 @@ export class GestionTicketsComponent implements OnInit, OnDestroy {
   cerrarModalDetalle(): void {
     this.mostrarModalDetalle = false;
     this.ticketSeleccionado = null;
+    this.mensajeExitoPrioridad = null;
+    this.errorPrioridad = null;
     this.cdr.detectChanges();
+  }
+
+  prioridadModificada(): boolean {
+    if (!this.ticketSeleccionado) return false;
+    const actual = (this.ticketSeleccionado.prioridad || 'MEDIA').toUpperCase();
+    return this.prioridadEditada.toUpperCase() !== actual;
+  }
+
+  guardarPrioridad(): void {
+    if (!this.ticketSeleccionado || !this.ticketSeleccionado.idTicket || !this.prioridadModificada()) {
+      return;
+    }
+
+    this.guardandoPrioridad = true;
+    this.mensajeExitoPrioridad = null;
+    this.errorPrioridad = null;
+
+    this.ticketService.actualizarPrioridad(this.ticketSeleccionado.idTicket, this.prioridadEditada).subscribe({
+      next: (ticketActualizado) => {
+        this.guardandoPrioridad = false;
+        this.ticketSeleccionado = { ...this.ticketSeleccionado!, ...ticketActualizado };
+        this.prioridadEditada = (ticketActualizado.prioridad || this.prioridadEditada).toUpperCase();
+        this.actualizarTicketEnListas(ticketActualizado);
+        this.calcularKpis();
+        this.mensajeExitoPrioridad = `Prioridad actualizada a ${this.prioridadEditada}. El límite SLA fue recalculado automáticamente.`;
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          this.mensajeExitoPrioridad = null;
+          this.cdr.detectChanges();
+        }, 3500);
+      },
+      error: (err) => {
+        this.guardandoPrioridad = false;
+        this.errorPrioridad = typeof err?.error === 'string'
+          ? err.error
+          : 'No se pudo actualizar la prioridad del ticket.';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   // --- MÉTODOS DE ASIGNACIÓN DE ASESOR ---
