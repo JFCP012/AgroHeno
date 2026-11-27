@@ -60,6 +60,10 @@ export class TicketService {
     return this.http.put<Ticket>(`${this.apiUrl}/${idTicket}/asignarTecnico?cedulaTecnico=${cedulaTecnico}`, {});
   }
 
+  actualizarPrioridad(idTicket: number, prioridad: string): Observable<Ticket> {
+    return this.http.put<Ticket>(`${this.apiUrl}/${idTicket}/prioridad?prioridad=${encodeURIComponent(prioridad)}`, {});
+  }
+
   listarAsesores(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(`${this.apiUrl}/asesores`);
   }

@@ -79,6 +79,18 @@ public class TicketControlador {
         }
     }
 
+    @PutMapping("/{idTicket}/prioridad")
+    public ResponseEntity<?> actualizarPrioridad(
+            @PathVariable Long idTicket,
+            @RequestParam String prioridad) {
+        try {
+            Ticket ticketActualizado = this.ticketServise.actualizarPrioridad(idTicket, prioridad);
+            return ResponseEntity.ok(ticketActualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping(value = { "/BuscarPorAsesor/{cedula}", "/BuscarPorAsesor" })
     public List<Ticket> BuscarPorAsesor(
             @PathVariable(value = "cedula", required = false) String cedulaPath,

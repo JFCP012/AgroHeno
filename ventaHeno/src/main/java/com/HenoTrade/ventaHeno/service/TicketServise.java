@@ -366,6 +366,49 @@ public class TicketServise {
         return ticketGuardado;
     }
 
+    // Actualizar manualmente la prioridad del ticket y recalcular su fecha límite SLA
+    @Transactional
+    public Ticket actualizarPrioridad(Long idTicket, String nuevaPrioridad) {
+        if (nuevaPrioridad == null || nuevaPrioridad.trim().isEmpty()) {
+            throw new IllegalArgumentException("Debe indicar una prioridad válida.");
+        }
+
+        Ticket ticket = this.ticketRepositorio.findById(idTicket)
+                .orElseThrow(() -> new RuntimeException("Ticket no encontrado con id: " + idTicket));
+
+        String prioridadNormalizada = nuevaPrioridad.trim().toUpperCase();
+        long horasSla;
+        switch (prioridadNormalizada) {
+            case "CRITICA":
+                horasSla = 24;
+                break;
+            case "ALTA":
+                horasSla = 48;
+                break;
+            case "MEDIA":
+                horasSla = 96;
+                break;
+            case "BAJA":
+                horasSla = 168;
+                break;
+            default:
+                throw new IllegalArgumentException("Prioridad no válida: " + nuevaPrioridad + ". Valores permitidos: CRITICA, ALTA, MEDIA, BAJA.");
+        }
+
+        LocalDateTime fechaBase = ticket.getFechaInicio() != null ? ticket.getFechaInicio() : LocalDateTime.now();
+        LocalDateTime nuevaFechaLimite = fechaBase.plusHours(horasSla);
+
+        ticket.setPrioridad(prioridadNormalizada);
+        ticket.setFechaLimite(nuevaFechaLimite);
+        if ("RESUELTO".equalsIgnoreCase(ticket.getEstadoTicket()) && ticket.getFechaFin() != null) {
+            ticket.setSlaVencido(ticket.getFechaFin().isAfter(nuevaFechaLimite));
+        } else {
+            ticket.setSlaVencido(LocalDateTime.now().isAfter(nuevaFechaLimite));
+        }
+
+        return this.ticketRepositorio.save(ticket);
+    }
+
     public List<Ticket> buscarPorCedulaClienteYEstado(String cedula, String estado) {
         return buscarPorCedulaClienteYEstado(cedula, estado, null);
     }

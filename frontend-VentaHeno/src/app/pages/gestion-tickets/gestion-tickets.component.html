@@ -268,6 +268,16 @@
     </div>
 
     <div class="modal-card-body">
+      <!-- Feedback al cambiar prioridad -->
+      <div *ngIf="mensajeExitoPrioridad" class="alert-banner-success">
+        <span class="alert-icon">✓</span>
+        <div>{{ mensajeExitoPrioridad }}</div>
+      </div>
+      <div *ngIf="errorPrioridad" class="alert-banner-error">
+        <span class="alert-icon">⚠</span>
+        <div>{{ errorPrioridad }}</div>
+      </div>
+
       <!-- Fila de metadatos simples -->
       <div class="modal-metadata-row">
         <div class="meta-block">
@@ -278,10 +288,29 @@
         </div>
         <div class="meta-block">
           <span class="meta-label">Prioridad</span>
-          <span class="prio-tag" [ngClass]="getPrioridadClass(ticketSeleccionado.prioridad)">
-            <span class="dot"></span>
-            {{ ticketSeleccionado.prioridad || 'MEDIA' }}
-          </span>
+          <div class="prio-edit-wrap">
+            <div class="prio-select-pill" [ngClass]="getPrioridadClass(prioridadEditada)">
+              <span class="dot"></span>
+              <select
+                class="prio-select-input"
+                [(ngModel)]="prioridadEditada"
+                [disabled]="guardandoPrioridad"
+                aria-label="Cambiar prioridad del ticket">
+                <option value="CRITICA">CRÍTICA (24h)</option>
+                <option value="ALTA">ALTA (48h)</option>
+                <option value="MEDIA">MEDIA (4 días)</option>
+                <option value="BAJA">BAJA (7 días)</option>
+              </select>
+            </div>
+            <button
+              *ngIf="prioridadModificada()"
+              type="button"
+              class="btn-save-prio"
+              (click)="guardarPrioridad()"
+              [disabled]="guardandoPrioridad">
+              {{ guardandoPrioridad ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
         </div>
         <div class="meta-block">
           <span class="meta-label">Categoría</span>
